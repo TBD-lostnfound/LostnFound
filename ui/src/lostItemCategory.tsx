@@ -1,33 +1,20 @@
-import {
-  Search,
-  Backpack,
-  Laptop,
-  BottleWine,
-  Shirt,
-  Contact,
-  KeyRound,
-} from "lucide-react";
+import { useState } from "react";
+import { Search } from "lucide-react";
+import { categories } from "./categories";
 import "./lostItemCategory.css";
 
-const categories = [
-  { id: "bookbag", label: "Bookbag", icon: Backpack },
-  { id: "technology", label: "Laptop & Technology", icon: Laptop },
-  { id: "bottle", label: "Water Bottle", icon: BottleWine },
-  { id: "clothes", label: "Clothes & Apparel", icon: Shirt },
-  { id: "wallet", label: "ID, Wallet & Lanyards", icon: Contact },
-  { id: "keys", label: "Keys & Accessories", icon: KeyRound },
-];
+
 
 export default function LostItemCategory() {
-  // Keep Bookbag selected while this page is design-only.
-  const selectedCategory = "bookbag";
+  const [selectedCategory, setSelectedCategory] = useState("bookbag");
 
   // Add these actions when the other pages are ready.
-  // const handleCategorySelect = (categoryId) => {};
   // const handleBackHome = () => {};
   // const handleGoBack = () => {};
   const handleContinue = () => {
-    window.location.assign("/lost/agent");
+    window.location.assign(
+      `/lost/agent?category=${encodeURIComponent(selectedCategory)}`
+    );
   };
 
   return (
@@ -71,8 +58,7 @@ export default function LostItemCategory() {
                 type="button"
                 className={`category-card ${isSelected ? "selected" : ""}`}
                 aria-pressed={isSelected}
-                aria-disabled="true"
-                // onClick={() => handleCategorySelect(id)}
+                onClick={() => setSelectedCategory(id)}
               >
                 <span className="category-icon">
                   <Icon size={20} strokeWidth={1.5} aria-hidden="true" />

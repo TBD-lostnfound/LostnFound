@@ -8,6 +8,7 @@ import {
   SendHorizontal,
 } from "lucide-react";
 import "./agentPage.css";
+import { categories } from "./categories";
 
 // Match cards use the same fields as the server's get_item result
 // (see server/src/tools.ts), so real items can replace these later.
@@ -25,14 +26,11 @@ type Message = {
   items?: FoundItem[];
 };
 
-// Placeholder summary. Fill category from the category page, and color and
-// location from the details the agent collects during the chat.
+// Color and location will come from the details collected during the chat.
 const reportSummary: {
-  category: string;
   color: { label: string; swatch: string } | null;
   location: string | null;
 } = {
-  category: "Bookbag",
   color: null,
   location: null,
 };
@@ -49,6 +47,9 @@ function daysAgo(isoDate: string) {
 }
 
 export default function AgentPage() {
+  const categoryId = new URLSearchParams(window.location.search).get("category");
+  const category = categories.find(({ id }) => id === categoryId) ?? categories[0];
+  const CategoryIcon = category.icon;
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
@@ -99,10 +100,10 @@ export default function AgentPage() {
           <div className="agent-summary">
             <div className="agent-summary-row">
               <span className="agent-summary-icon highlighted">
-                <Backpack size={18} strokeWidth={1.5} aria-hidden="true" />
+                <CategoryIcon size={18} strokeWidth={1.5} aria-hidden="true" />
               </span>
               <div>
-                <div className="agent-summary-value">{reportSummary.category}</div>
+                <div className="agent-summary-value">{category.label}</div>
                 <div className="agent-summary-label">Category</div>
               </div>
             </div>
