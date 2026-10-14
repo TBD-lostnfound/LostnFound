@@ -1,7 +1,7 @@
 // Mock tools over stubs/foundyou-fake-items.json. Never returns server_only fields.
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-import { AREA_ENUM, COLORS, ITEM_TYPES, ROOT } from "./lists.js";
+//import { readFileSync } from "node:fs";made this a comment too
+//import { resolve } from "node:path"; made this a comment since we dont need it
+import { AREA_ENUM, COLORS, ITEM_TYPES } from "./lists.js";// i removed root from the previous import
 
 // ---- Scoring weights (tune here) -------------------------------------------
 export const WEIGHTS = {
@@ -30,9 +30,64 @@ interface Record_ {
   server_only: { finder_id: string; detected_text: string; status: string };
 }
 
-const records: Record_[] = JSON.parse(
-  readFileSync(resolve(ROOT, "stubs/foundyou-fake-items.json"), "utf8"),
-);
+//const records: Record_[] = JSON.parse(
+  //readFileSync(resolve(ROOT, "stubs/foundyou-fake-items.json"), "utf8"),
+//);
+
+// this is the few mismatches i found in the code to convert image-backend item types into the chat's existing item types.
+const TYPE_MAP: Record<string, string> = {
+  charger_or_cable: "charger",
+  smartwatch_or_tracker: "watch",
+  wallet: "purse_or_wallet",
+  handbag_or_purse: "purse_or_wallet",
+  student_id: "id_card",
+  gov_id_or_passport: "id_card",
+  jacket_or_coat: "jacket",
+  notebook_or_binder: "notebook",
+  book_or_textbook: "textbook",
+};
+
+async function loadRecords(): Promise<Record_[]> {
+  const base = (
+    process.env.IMAGE_BACKEND_URL || "http://localhost:8790"
+  ).replace(/\/$/, "");
+
+  const response = await fetch(`${base}/api/items`, {
+    signal: AbortSignal.timeout(10000),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Image backend returned HTTP ${response.status}`);
+  }
+
+  const items = await response.json();
+
+  if (!Array.isArray(items)) {
+    throw new Error("Image backend returned an invalid item list");
+  }
+
+  return items.map((item: any): Record_ => ({
+    public: {
+      id: item.id,
+      category: item.category,
+      item_type:
+        TYPE_MAP[item.item_type] ??
+        (ITEM_TYPES.includes(item.item_type) ? item.item_type : "other"),
+      colors: item.colors,
+      brand: item.brand ?? null,
+      description: item.caption,
+      area: item.area ?? "",
+      location_detail: null,
+      found_at: item.found_at,
+      image_url: new URL(item.image_url, `${base}/`).href,
+    },
+    server_only: {
+      finder_id: "",
+      detected_text: "",
+      status: item.system?.status ?? "unavailable",
+    },
+  }));
+}
 
 const words = (s: string) => s.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
 
@@ -43,7 +98,7 @@ export interface SearchArgs {
   keywords?: string;
   area?: string;
   lost_after?: string;
-  lost_before?: string; // accepted, deliberately not used to exclude (item may be found after loss window)
+  lost_before?: string; //item may be found after loss window
 }
 
 /** Treats empty optional values ("", whitespace, []) as not provided. */
@@ -62,11 +117,51 @@ export function cleanSearchArgs(raw: any): SearchArgs {
   return out;
 }
 
-export function search_items(rawArgs: SearchArgs) {
+// export function search_items(rawArgs: SearchArgs) {
+//     const args = cleanSearchArgs(rawArgs);
+//     if (!args.item_type || !ITEM_TYPES.includes(args.item_type)) {
+//       return { error: `item_type is required and must be one of the fixed list` };
+//     }
+//     const lostAfter = args.lost_after ? Date.parse(args.lost_after) : NaN;
+//     const wantColors = (args.colors ?? []).map((c: string) => c.toLowerCase());
+//     const wantBrand = args.brand?.trim().toLowerCase();
+//     const wantWords = args.keywords ? [...new Set(words(args.keywords))] : [];
+  
+//     const scored = records
+//       .filter((r) => r.server_only.status === "available")
+//       .filter((r) => r.public.item_type === args.item_type)
+//       .filter((r) => !args.area || r.public.area === args.area)
+//       .filter((r) => Number.isNaN(lostAfter) || Date.parse(r.public.found_at) >= lostAfter)
+//       .map((r) => {
+//         let score = 0;
+//         for (const c of r.public.colors) if (wantColors.includes(c)) score += WEIGHTS.color;
+//         if (wantBrand && r.public.brand && r.public.brand.toLowerCase() === wantBrand) score += WEIGHTS.brand;
+//         const descWords = new Set(words(r.public.description));
+//         for (const w of wantWords) if (descWords.has(w)) score += WEIGHTS.keyword;
+//         return { r, score };
+//       })
+//       .sort((a, b) => b.score - a.score || Date.parse(b.r.public.found_at) - Date.parse(a.r.public.found_at))
+//       .slice(0, MAX_RESULTS);
+  
+//     return {
+//       results: scored.map(({ r }) => ({
+//         id: r.public.id,
+//         item_type: r.public.item_type,
+//         colors: r.public.colors,
+//         area: r.public.area,
+//         date: r.public.found_at.slice(0, 10),
+//       })),
+//     };
+//   }
+
+export async function search_items(rawArgs: SearchArgs) {
   const args = cleanSearchArgs(rawArgs);
   if (!args.item_type || !ITEM_TYPES.includes(args.item_type)) {
     return { error: `item_type is required and must be one of the fixed list` };
   }
+
+  const records = await loadRecords();
+
   const lostAfter = args.lost_after ? Date.parse(args.lost_after) : NaN;
   const wantColors = (args.colors ?? []).map((c: string) => c.toLowerCase());
   const wantBrand = args.brand?.trim().toLowerCase();
@@ -99,17 +194,38 @@ export function search_items(rawArgs: SearchArgs) {
   };
 }
 
-export function get_item(args: { id?: string }) {
-  const r = records.find((x) => x.public.id === args?.id && x.server_only.status === "available");
+// export function get_item(args: { id?: string }) {
+//   const r = records.find((x) => x.public.id === args?.id && x.server_only.status === "available");
+//   if (!r) return { error: "not found" };
+//   return { item: { ...r.public } };
+// }
+
+export async function get_item(args: { id?: string }) {
+  const records = await loadRecords();
+  const r = records.find(
+    (x) => x.public.id === args?.id &&
+           x.server_only.status === "available"
+  );
+
   if (!r) return { error: "not found" };
   return { item: { ...r.public } };
 }
 
-export function runTool(name: string, args: any): unknown {
+// export function runTool(name: string, args: any): unknown {
+//   if (name === "search_items") return search_items(args);
+//   if (name === "get_item") return get_item(args);
+//   return { error: `unknown tool: ${name}` };
+// }
+
+export async function runTool(
+  name: string,
+  args: any
+): Promise<unknown> {
   if (name === "search_items") return search_items(args);
   if (name === "get_item") return get_item(args);
   return { error: `unknown tool: ${name}` };
 }
+
 
 export const TOOL_DEFS = [
   {
