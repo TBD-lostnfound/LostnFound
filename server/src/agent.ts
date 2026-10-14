@@ -51,7 +51,8 @@ export async function runTurn(history: Msg[]) {
       try { args = JSON.parse(tc.function.arguments || "{}"); } catch { args = {}; }
       // The page shows what was actually searched: empty optional args are dropped.
       if (tc.function.name === "search_items") args = cleanSearchArgs(args);
-      const result = runTool(tc.function.name, args);
+      //const result = runTool(tc.function.name, args);
+      const result = await runTool(tc.function.name, args);
       toolCalls.push({ name: tc.function.name, arguments: args, result });
       const toolMsg: Msg = { role: "tool", tool_call_id: tc.id, content: JSON.stringify(result) };
       working.push(toolMsg);
