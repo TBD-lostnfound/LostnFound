@@ -1,6 +1,7 @@
 import { mockModel, type Msg } from "./mock.js";
 import { buildSystemPrompt } from "./prompt.js";
 import { cleanSearchArgs, runTool, TOOL_DEFS } from "./tools.js";
+import { AREA_ENUM } from "./lists.js";//just added this
 
 const MAX_ROUNDS = 8;
 export function getSystemPrompt(now: Date = new Date()) {
@@ -35,6 +36,34 @@ async function callOpenRouter(messages: Msg[]): Promise<Msg> {
 /** history: prior conversation (no system message). Returns the new messages for this turn. */
 export async function runTurn(history: Msg[]) {
   const mock = process.env.MOCK_MODE !== "false";
+  // Detect an explicit statement that the location is unknown.
+  // Use the most recent such statement or recognized campus location.
+  let locationUnknown = false;
+
+  for (let i = 0; i < history.length; i++) {
+    const message = history[i];
+    if (message.role !== "user") continue;
+
+    const text = (message.content ?? "").toLowerCase();
+    const previous = history[i - 1];
+
+    const explicitUnknown =
+      /\b(unsure|uncertain)\s+(of\s+)?(where|of the location)\b/.test(text) ||
+      /\b(don't|do not|dont)\s+know\s+(where|the location)\b/.test(text);
+
+    const answeringWhere =
+      previous?.role === "assistant" &&
+      /\bwhere\b/i.test(previous.content ?? "");
+
+    if (explicitUnknown) {
+      locationUnknown = true;
+    } else if (answeringWhere) {
+      locationUnknown =
+        /\b(unsure|uncertain|don't know|do not know|dont know|not sure)\b/.test(text);
+    } else if (AREA_ENUM.some((area) => text.includes(area.toLowerCase()))) {
+      locationUnknown = false;
+    }
+  }
   const working: Msg[] = [{ role: "system", content: getSystemPrompt() }, ...history];
   const newMessages: Msg[] = [];
   const toolCalls: ToolCallRecord[] = [];
@@ -50,8 +79,18 @@ export async function runTurn(history: Msg[]) {
       let args: unknown = {};
       try { args = JSON.parse(tc.function.arguments || "{}"); } catch { args = {}; }
       // The page shows what was actually searched: empty optional args are dropped.
-      if (tc.function.name === "search_items") args = cleanSearchArgs(args);
-      const result = runTool(tc.function.name, args);
+      //if (tc.function.name === "search_items") args = cleanSearchArgs(args);
+      if (tc.function.name === "search_items") {
+        const cleaned = cleanSearchArgs(args);
+
+        if (locationUnknown) {
+          delete cleaned.area;
+        }
+
+        args = cleaned;
+      }
+      //const result = runTool(tc.function.name, args);
+      const result = await runTool(tc.function.name, args);
       toolCalls.push({ name: tc.function.name, arguments: args, result });
       const toolMsg: Msg = { role: "tool", tool_call_id: tc.id, content: JSON.stringify(result) };
       working.push(toolMsg);
