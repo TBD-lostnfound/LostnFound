@@ -57,8 +57,11 @@ export default function AgentPage() {
     endRef.current?.scrollIntoView({ block: "end" });
   }, [messages]);
 
+  const handleBack = () => {
+    window.location.assign("/lost/category");
+  };
+
   // Add these actions when the other pages are ready.
-  // const handleBack = () => {};
   // const handleOpenMatch = (itemId) => {};
   // const handleSeeAllMatches = () => {};
 
@@ -83,8 +86,7 @@ export default function AgentPage() {
         <button
           type="button"
           className="agent-back-button"
-          aria-disabled="true"
-          // onClick={handleBack}
+          onClick={handleBack}
         >
           Back
         </button>
