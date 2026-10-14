@@ -3,6 +3,7 @@
 html, body { margin: 0; min-height: 100%; }
 body { font-family: Arial, Helvetica, sans-serif; -webkit-font-smoothing: antialiased; background: #fff; }
 button { font: inherit; border: 0; cursor: default; font-weight: 600; white-space: nowrap; }
+button:not([aria-disabled="true"]) { cursor: pointer; }
 button:focus-visible { outline: 3px solid #ffa000; outline-offset: 5px; }
 .dark-section { color: var(--foreground); min-height: 990px; background: radial-gradient(ellipse 600px 540px at 96% 10%, #103640 0%, transparent 85%), var(--background); }
 .header { max-width: 1760px; margin: auto; padding: 58px 84px 0; display: flex; align-items: center; justify-content: space-between; }
