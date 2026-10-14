@@ -22,6 +22,10 @@ body {
   cursor: default;
 }
 
+.category-page button:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
 .category-page button:focus-visible {
   outline: 3px solid #bd7400;
   outline-offset: 4px;

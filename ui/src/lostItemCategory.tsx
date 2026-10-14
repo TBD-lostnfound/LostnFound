@@ -26,7 +26,9 @@ export default function LostItemCategory() {
   // const handleCategorySelect = (categoryId) => {};
   // const handleBackHome = () => {};
   // const handleGoBack = () => {};
-  // const handleContinue = () => {};
+  const handleContinue = () => {
+    window.location.assign("/lost/agent");
+  };
 
   return (
     <div className="category-page">
@@ -100,8 +102,7 @@ export default function LostItemCategory() {
         <button
           type="button"
           className="continue-button"
-          aria-disabled="true"
-          // onClick={handleContinue}
+          onClick={handleContinue}
         >
           Continue
         </button>
