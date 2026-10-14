@@ -4,6 +4,7 @@ html, body { margin: 0; min-height: 100%; }
 body { font-family: Arial, Helvetica, sans-serif; -webkit-font-smoothing: antialiased; background: #fff; }
 button, textarea { font: inherit; }
 button { border: 0; cursor: default; font-weight: 600; white-space: nowrap; }
+button:not([aria-disabled="true"]) { cursor: pointer; }
 button:focus-visible, textarea:focus-visible { outline: 3px solid #ffa000; outline-offset: 5px; }
 .dark-section { color: var(--foreground); min-height: 779px; background: radial-gradient(ellipse 420px 420px at 92% 14%, #12303a 0%, transparent 85%), var(--background); }
 .header { max-width: 1700px; margin: auto; padding: 37px 75px 0; display: flex; align-items: center; justify-content: space-between; }

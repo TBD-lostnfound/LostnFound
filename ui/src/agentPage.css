@@ -21,6 +21,11 @@
   cursor: default;
 }
 
+/* Working buttons get the hand cursor; placeholders keep the arrow. */
+.agent-page button:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
 .agent-page button:focus-visible,
 .agent-page input:focus-visible {
   outline: 3px solid #bd7400;
