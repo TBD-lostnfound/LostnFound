@@ -11,7 +11,7 @@ This doc says what exists on each side, what has to change, which rules must not
 
 ## 1. Getting the code
 
-The repo is public, so anyone can clone it: `git clone https://github.com/goasare/LostnFound.git`.
+The repo is public, so anyone can clone it: `git clone https://github.com/TBD-lostnfound/LostnFound.git`.
 
 To push, you need one of:
 - **Fork and PR:** fork on GitHub, push a branch to your fork, open a pull request to `main`.
