@@ -9,6 +9,8 @@ export const config = {
   openrouterKey: process.env.OPENROUTER_API_KEY ?? "",
   visionModel: process.env.VISION_MODEL ?? "openai/gpt-6-luna",
   dataDir: resolve(ROOT, "data"),
+  // Set on Cloud Run (e.g. lostnfound-370-images). Empty = use the local data/ folder.
+  gcsBucket: process.env.GCS_BUCKET ?? "",
   publicDir: resolve(ROOT, "public"),
   timeZone: "America/New_York",
 };

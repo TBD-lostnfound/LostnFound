@@ -4,7 +4,7 @@ import { Hono } from "hono";
 import { relative } from "node:path";
 import { config } from "./config.js";
 import { ingestPhoto } from "./pipeline/ingest.js";
-import { getItem, IMAGES_DIR, listItems } from "./store.js";
+import { getImage, getItem, listItems } from "./store.js";
 
 const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
 const num = (v: unknown) => (typeof v === "string" && v.trim() !== "" && Number.isFinite(Number(v)) ? Number(v) : undefined);
@@ -36,7 +36,10 @@ app.get("/api/items/:id", async (c) => {
   return item ? c.json(item) : c.json({ error: "not found" }, 404);
 });
 
-app.use("/images/*", serveStatic({ root: relative(process.cwd(), IMAGES_DIR), rewriteRequestPath: (p) => p.replace(/^\/images/, "") }));
+app.get("/images/:name", async (c) => {
+  const jpeg = await getImage(c.req.param("name"));
+  return jpeg ? c.body(new Uint8Array(jpeg), 200, { "Content-Type": "image/jpeg" }) : c.json({ error: "not found" }, 404);
+});
 app.use("/*", serveStatic({ root: relative(process.cwd(), config.publicDir) }));
 
 serve({ fetch: app.fetch, port: config.port }, () => {

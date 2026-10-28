@@ -1,0 +1,13 @@
+# What `gcloud builds submit` uploads to Cloud Build.
+# Allowlist: only the folders the containers need. Everything else (.env, local data,
+# anything new someone adds later) stays on the laptop by default.
+/*
+!/server/
+!/image-recognition/
+!/ui/
+!/docs/
+!/prompts/
+**/node_modules/
+**/dist/
+**/data/
+**/.env

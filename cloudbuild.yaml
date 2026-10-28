@@ -1,0 +1,89 @@
+# Builds the 3 containers and deploys them to Cloud Run.
+# Run by hand from the repo root:  gcloud builds submit --config cloudbuild.yaml
+# A Cloud Build trigger runs this same file on every push to main.
+#
+# Services: foundyou-ui (website), foundyou-agent (server/), foundyou-images (image-recognition/)
+
+substitutions:
+  _REGION: us-east1
+  _REPO: us-east1-docker.pkg.dev/${PROJECT_ID}/foundyou
+  _RUN_SA: foundyou-run@${PROJECT_ID}.iam.gserviceaccount.com
+  _BUCKET: lostnfound-370-images
+
+# The build runs as its own robot (foundyou-deployer), which may build, push and deploy.
+serviceAccount: projects/${PROJECT_ID}/serviceAccounts/foundyou-deployer@${PROJECT_ID}.iam.gserviceaccount.com
+options:
+  dynamicSubstitutions: true
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  # 1. Build the 3 containers at the same time ('-' = don't wait for earlier steps).
+  - id: build-images
+    name: gcr.io/cloud-builders/docker
+    args: [build, -f, image-recognition/Dockerfile, -t, "${_REPO}/images:${BUILD_ID}", .]
+    waitFor: ["-"]
+  - id: build-agent
+    name: gcr.io/cloud-builders/docker
+    args: [build, -f, server/Dockerfile, -t, "${_REPO}/agent:${BUILD_ID}", .]
+    waitFor: ["-"]
+  - id: build-ui
+    name: gcr.io/cloud-builders/docker
+    args: [build, -f, ui/Dockerfile, -t, "${_REPO}/ui:${BUILD_ID}", .]
+    waitFor: ["-"]
+
+  # 2. Put them on the Artifact Registry shelf.
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    args: [-c, 'for s in images agent ui; do docker push "${_REPO}/$$s:${BUILD_ID}" || exit 1; done']
+
+  # 3. Photo reader: saves to the bucket, reads the AI key from Secret Manager.
+  #    Max 1 instance, because items.json in the bucket has no locking.
+  - id: deploy-images
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - foundyou-images
+      - --image=${_REPO}/images:${BUILD_ID}
+      - --region=${_REGION}
+      - --service-account=${_RUN_SA}
+      - --allow-unauthenticated
+      - --max-instances=1
+      - --memory=1Gi
+      - --set-env-vars=GCS_BUCKET=${_BUCKET}
+      - --set-secrets=OPENROUTER_API_KEY=openrouter-api-key:latest
+    waitFor: [push]
+
+  # 4. Website: static files, nothing secret.
+  - id: deploy-ui
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - foundyou-ui
+      - --image=${_REPO}/ui:${BUILD_ID}
+      - --region=${_REGION}
+      - --service-account=${_RUN_SA}
+      - --allow-unauthenticated
+      - --max-instances=2
+    waitFor: [push]
+
+  # 5. Agent: needs the photo reader's URL, so it goes last. Mock mode = no AI cost.
+  - id: deploy-agent
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        URL=$$(gcloud run services describe foundyou-images --region=${_REGION} --format='value(status.url)') &&
+        gcloud run deploy foundyou-agent \
+          --image=${_REPO}/agent:${BUILD_ID} \
+          --region=${_REGION} \
+          --service-account=${_RUN_SA} \
+          --allow-unauthenticated \
+          --max-instances=2 \
+          --set-env-vars=MOCK_MODE=true,IMAGE_BACKEND_URL=$$URL
+    waitFor: [deploy-images]
