@@ -7,10 +7,13 @@ button:not([aria-disabled="true"]) { cursor: pointer; }
 button:focus-visible { outline: 3px solid #ffa000; outline-offset: 5px; }
 .dark-section { color: var(--foreground); min-height: 990px; background: radial-gradient(ellipse 600px 540px at 96% 10%, #103640 0%, transparent 85%), var(--background); }
 .header { max-width: 1760px; margin: auto; padding: 58px 84px 0; display: flex; align-items: center; justify-content: space-between; }
-.brand { display: flex; align-items: center; gap: 20px; font-size: 34px; font-weight: 700; letter-spacing: -.7px; }
+.brand { color: inherit; text-decoration: none; display: flex; align-items: center; gap: 20px; font-size: 34px; font-weight: 700; letter-spacing: -.7px; }
 .brand-icon { display: grid; place-items: center; width: 58px; height: 56px; border-radius: 15px; color: #07121c; background: var(--cyan); }
 nav { display: flex; gap: 52px; align-items: center; }
 .nav-button { padding: 10px 0; background: transparent; color: #aab4c3; font-size: 21px; }
+nav button { cursor: pointer; transition: color .15s, background .15s; }
+.nav-button:hover { color: #fafbff; }
+.sign-in:hover { background: #e9ecf2; }
 .sign-in { padding: 16px 32px; border-radius: 36px; color: #0b0f17; background: #fff; font-size: 20px; }
 .hero { margin: 134px auto 0; padding: 0 24px 40px; text-align: center; }
 .eyebrow { display: inline-block; padding: 15px 30px; border-radius: 32px; background: #112e38; color: #28ddef; font-size: 20px; font-weight: 700; }
