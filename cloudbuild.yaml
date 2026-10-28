@@ -2,7 +2,7 @@
 # Run by hand from the repo root:  gcloud builds submit --config cloudbuild.yaml
 # A Cloud Build trigger runs this same file on every push to main.
 #
-# Services: foundyou-ui (website), foundyou-agent (server/), foundyou-images (image-recognition/)
+# Services: foundyou-ui (website + front door), foundyou-agent (server/), foundyou-images (image-recognition/)
 
 substitutions:
   _REGION: us-east1
@@ -56,22 +56,7 @@ steps:
       - --set-secrets=OPENROUTER_API_KEY=openrouter-api-key:latest
     waitFor: [push]
 
-  # 4. Website: static files, nothing secret.
-  - id: deploy-ui
-    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
-    entrypoint: gcloud
-    args:
-      - run
-      - deploy
-      - foundyou-ui
-      - --image=${_REPO}/ui:${BUILD_ID}
-      - --region=${_REGION}
-      - --service-account=${_RUN_SA}
-      - --allow-unauthenticated
-      - --max-instances=2
-    waitFor: [push]
-
-  # 5. Agent: needs the photo reader's URL, so it goes last. Mock mode = no AI cost.
+  # 4. Agent: needs the photo reader's URL. Mock mode = no AI cost.
   - id: deploy-agent
     name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
     entrypoint: bash
@@ -87,3 +72,22 @@ steps:
           --max-instances=2 \
           --set-env-vars=MOCK_MODE=true,IMAGE_BACKEND_URL=$$URL
     waitFor: [deploy-images]
+
+  # 5. Website: the one front door. Its nginx forwards /api/* and /images/* to the other two,
+  #    so it needs both URLs and goes last.
+  - id: deploy-ui
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        AGENT=$$(gcloud run services describe foundyou-agent --region=${_REGION} --format='value(status.url)') &&
+        IMAGES=$$(gcloud run services describe foundyou-images --region=${_REGION} --format='value(status.url)') &&
+        gcloud run deploy foundyou-ui \
+          --image=${_REPO}/ui:${BUILD_ID} \
+          --region=${_REGION} \
+          --service-account=${_RUN_SA} \
+          --allow-unauthenticated \
+          --max-instances=2 \
+          --set-env-vars=AGENT_URL=$$AGENT,IMAGES_URL=$$IMAGES
+    waitFor: [deploy-agent]

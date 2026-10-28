@@ -11,6 +11,7 @@ RUN npm run build
 
 # Stage 2: serve those files with nginx. Node is not needed at runtime, so the final image is small.
 FROM nginx:alpine
-COPY ui/nginx.conf /etc/nginx/conf.d/default.conf
+# Files in templates/ get their ${VARS} filled in from env vars at startup (needs AGENT_URL, IMAGES_URL).
+COPY ui/nginx.conf /etc/nginx/templates/default.conf.template
 COPY --from=build /app/ui/dist /usr/share/nginx/html
 EXPOSE 8080
