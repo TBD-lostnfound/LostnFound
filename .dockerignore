@@ -1,0 +1,11 @@
+# What Docker copies into the build. Same allowlist as .gcloudignore.
+*
+!server
+!image-recognition
+!ui
+!docs
+!prompts
+**/node_modules
+**/dist
+**/data
+**/.env
