@@ -26,6 +26,11 @@ type Message = {
   items?: FoundItem[];
 };
 
+type RawMessage = {
+  role: string;
+  content: string | null;
+  [key: string]: unknown;
+};
 // Color and location will come from the details collected during the chat.
 const reportSummary: {
   color: { label: string; swatch: string } | null;
