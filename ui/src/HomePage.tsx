@@ -4,7 +4,7 @@ import { Search, CircleCheck, Clock3, ShieldCheck } from "lucide-react";
 // const handleAbout = () => {};
 // const handleUpdates = () => {};
 // const handleSignIn = () => {};
-// const handleReportFoundItem = () => {};
+
 
 export default function Home() {
   const handleReportLostItem = () => {
@@ -36,8 +36,8 @@ export default function Home() {
             <button type="button" className="report-button lost"
               onClick={handleReportLostItem}
             ><Search size={34} aria-hidden="true" />I Lost Something</button>
-            <button type="button" className="report-button found" aria-disabled="true"
-              // onClick={handleReportFoundItem}
+            <button type="button" className="report-button found"
+              onClick={() => window.location.assign("/found/report")}
             ><ShieldCheck size={36} aria-hidden="true" />I Found Something</button>
           </div>
           <p className="trust-line">Powered by visual matching · Secure Campus Network</p>
