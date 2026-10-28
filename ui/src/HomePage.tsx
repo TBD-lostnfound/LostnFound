@@ -15,7 +15,7 @@ export default function Home() {
     <main>
       <section className="dark-section">
         <header className="header">
-          <div className="brand"><span className="brand-icon"><Search size={28} strokeWidth={2} /></span><span>FoundYou</span></div>
+          <a href="/" className="brand"><span className="brand-icon"><Search size={28} strokeWidth={2} /></span><span>FoundYou</span></a>
           <nav aria-label="Main navigation">
             <button type="button" className="nav-button" aria-disabled="true"
               // onClick={handleAbout}

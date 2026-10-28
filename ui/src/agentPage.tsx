@@ -26,6 +26,12 @@ type Message = {
   items?: FoundItem[];
 };
 
+type RawMessage = {
+  role: string;
+  content: string | null;
+  [key: string]: unknown;
+};
+
 // Color and location will come from the details collected during the chat.
 const reportSummary: {
   color: { label: string; swatch: string } | null;
@@ -50,8 +56,13 @@ export default function AgentPage() {
   const categoryId = new URLSearchParams(window.location.search).get("category");
   const category = categories.find(({ id }) => id === categoryId) ?? categories[0];
   const CategoryIcon = category.icon;
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [history, setHistory] = useState<RawMessage[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -66,23 +77,99 @@ export default function AgentPage() {
   // const handleOpenMatch = (itemId) => {};
   // const handleSeeAllMatches = () => {};
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const text = input.trim();
-    if (!text) return;
+    if (!text || busy) return;
+
+    setBusy(true);
+    setError("");
     setInput("");
-    setMessages((current) => [...current, { role: "user", text }]);
-    // Send the conversation to the agent here and add its reply to messages.
+
+    setMessages((current) => [
+      ...current,
+      { role: "user", text },
+    ]);
+
+    const nextHistory: RawMessage[] = [
+      ...history,
+      {
+        role: "user",
+        content:
+          history.length === 0 && categoryId
+            ? `Selected category: ${category.label}.\n${text}`
+            : text,
+      },
+    ];
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: nextHistory,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Could not reach the agent.");
+      }
+
+      // Keep the complete assistant/tool history for subsequent turns.
+      setHistory([
+        ...nextHistory,
+        ...data.newMessages,
+      ]);
+
+      const items: FoundItem[] = data.toolCalls
+        .filter(
+          (call: {
+            name: string;
+            result?: { item?: FoundItem };
+          }) =>
+            call.name === "get_item" &&
+            call.result?.item
+        )
+        .map(
+          (call: { result: { item: FoundItem } }) =>
+            call.result.item
+        );
+
+      setMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          text: data.reply,
+          items,
+        },
+      ]);
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : "Something went wrong."
+      );
+
+      // Restore an unsuccessful message so it can be retried.
+      setMessages((current) => current.slice(0, -1));
+      setInput(text);
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
     <div className="agent-page">
       <header className="agent-header">
-        <div className="agent-logo">
+        <a href="/" className="agent-logo">
           <span className="agent-logo-icon">
             <Search size={17} aria-hidden="true" />
           </span>
           <span>FoundYou</span>
-        </div>
+        </a>
 
         <button
           type="button"
@@ -100,7 +187,11 @@ export default function AgentPage() {
           <div className="agent-summary">
             <div className="agent-summary-row">
               <span className="agent-summary-icon highlighted">
-                <CategoryIcon size={18} strokeWidth={1.5} aria-hidden="true" />
+                <CategoryIcon
+                  size={18}
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
               </span>
               <div>
                 <div className="agent-summary-value">{category.label}</div>
@@ -110,12 +201,22 @@ export default function AgentPage() {
 
             <div className="agent-summary-row">
               <span
-                className={`agent-color-swatch ${reportSummary.color ? "" : "empty"}`}
-                style={reportSummary.color ? { background: reportSummary.color.swatch } : undefined}
+                className={`agent-color-swatch ${
+                  reportSummary.color ? "" : "empty"
+                }`}
+                style={
+                  reportSummary.color
+                    ? { background: reportSummary.color.swatch }
+                    : undefined
+                }
                 aria-hidden="true"
               />
               <div>
-                <div className={`agent-summary-value ${reportSummary.color ? "" : "empty"}`}>
+                <div
+                  className={`agent-summary-value ${
+                    reportSummary.color ? "" : "empty"
+                  }`}
+                >
                   {reportSummary.color?.label ?? "Not yet known"}
                 </div>
                 <div className="agent-summary-label">Color — from chat</div>
@@ -124,22 +225,36 @@ export default function AgentPage() {
 
             <div className="agent-summary-row">
               <span className="agent-summary-icon">
-                <MapPin size={18} strokeWidth={1.5} aria-hidden="true" />
+                <MapPin
+                  size={18}
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
               </span>
               <div>
-                <div className={`agent-summary-value ${reportSummary.location ? "" : "empty"}`}>
+                <div
+                  className={`agent-summary-value ${
+                    reportSummary.location ? "" : "empty"
+                  }`}
+                >
                   {reportSummary.location ?? "Not yet known"}
                 </div>
-                <div className="agent-summary-label">Location — from chat</div>
+                <div className="agent-summary-label">
+                  Location — from chat
+                </div>
               </div>
             </div>
           </div>
 
           <p className="agent-privacy-note">
-            <ShieldCheck size={16} strokeWidth={1.5} aria-hidden="true" />
+            <ShieldCheck
+              size={16}
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
             <span>
-              The agent only searches reports already submitted by other
-              students — nothing is shared until you verify a match.
+              FoundYou helps you compare possible matches. It does not
+              determine ownership.
             </span>
           </p>
         </aside>
@@ -153,7 +268,7 @@ export default function AgentPage() {
               <div className="agent-name">FoundYou Agent</div>
               <div className="agent-status">
                 <span className="agent-status-dot" aria-hidden="true" />
-                Searching campus reports
+                {busy ? "Searching reports…" : "Ready for your description"}
               </div>
             </div>
           </div>
@@ -162,11 +277,16 @@ export default function AgentPage() {
             {messages.length === 0 && (
               <p className="agent-empty-state">
                 Describe what you lost — color, any unique details, and where
-                you last had it — and the agent will search campus reports.
+                you last had it — and the agent will search reports.
+                If the location or time is unknown, say so.
               </p>
             )}
+
             {messages.map((message, index) => (
-              <div key={index} className={`agent-message ${message.role}`}>
+              <div
+                key={index}
+                className={`agent-message ${message.role}`}
+              >
                 {message.role === "assistant" && (
                   <span className="agent-avatar" aria-hidden="true" />
                 )}
@@ -180,26 +300,49 @@ export default function AgentPage() {
                       type="button"
                       className="agent-match-card"
                       aria-disabled="true"
-                      // onClick={() => handleOpenMatch(item.id)}
                     >
                       <span className="agent-match-image">
-                        <Backpack size={24} strokeWidth={1.4} aria-hidden="true" />
+                        <Backpack
+                          size={24}
+                          strokeWidth={1.4}
+                          aria-hidden="true"
+                        />
                       </span>
+
                       <span className="agent-match-text">
                         <span className="agent-match-title">
-                          {capitalize(item.colors.join(" "))} {item.item_type}
+                          {capitalize(item.colors.join(" "))}{" "}
+                          {item.item_type.replaceAll("_", " ")}
                         </span>
+
                         <span className="agent-match-detail">
-                          Found near {item.area} · {daysAgo(item.found_at)}
+                          {item.area || "Location not recorded"}
+                          {" · "}
+                          {item.found_at
+                            ? item.found_at.slice(0, 10)
+                            : "Date not recorded"}
                         </span>
                       </span>
-                      {/* The backend does not rank matches yet, so this label is fixed for now. */}
-                      <span className="agent-match-badge">Strong match</span>
+
+                      <span className="agent-match-badge">
+                        Possible match
+                      </span>
                     </button>
                   ))}
                 </div>
               </div>
             ))}
+
+            {busy && (
+              <p role="status">Searching reports…</p>
+            )}
+
+            {error && (
+              <p role="alert" style={{ color: "crimson" }}>
+                {error}
+              </p>
+            )}
+
             <div ref={endRef} />
           </div>
 
@@ -213,6 +356,7 @@ export default function AgentPage() {
             <label className="agent-sr-only" htmlFor="agent-input">
               Type your answer
             </label>
+
             <input
               id="agent-input"
               className="agent-input"
@@ -220,8 +364,15 @@ export default function AgentPage() {
               onChange={(event) => setInput(event.target.value)}
               placeholder="Type your answer…"
               autoComplete="off"
+              disabled={busy}
             />
-            <button type="submit" className="agent-send-button" aria-label="Send">
+
+            <button
+              type="submit"
+              className="agent-send-button"
+              aria-label="Send"
+              disabled={busy || !input.trim()}
+            >
               <SendHorizontal size={18} aria-hidden="true" />
             </button>
           </form>
@@ -231,7 +382,6 @@ export default function AgentPage() {
               type="button"
               className="agent-see-all-button"
               aria-disabled="true"
-              // onClick={handleSeeAllMatches}
             >
               See all possible matches instead
             </button>

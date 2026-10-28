@@ -8,9 +8,14 @@ import "./lostItemCategory.css";
 export default function LostItemCategory() {
   const [selectedCategory, setSelectedCategory] = useState("bookbag");
 
-  // Add these actions when the other pages are ready.
-  // const handleBackHome = () => {};
-  // const handleGoBack = () => {};
+  const handleBackHome = () => {
+    window.location.assign("/");
+  };
+
+  const handleGoBack = () => {
+    window.location.assign("/");
+  };
+
   const handleContinue = () => {
     window.location.assign(
       `/lost/agent?category=${encodeURIComponent(selectedCategory)}`
@@ -20,18 +25,17 @@ export default function LostItemCategory() {
   return (
     <div className="category-page">
       <header className="page-header">
-        <div className="logo">
+        <a href="/" className="logo">
           <span className="logo-icon">
             <Search size={17} aria-hidden="true" />
           </span>
           <span>FoundYou</span>
-        </div>
+        </a>
 
         <button
           type="button"
           className="home-button"
-          aria-disabled="true"
-          // onClick={handleBackHome}
+          onClick={handleBackHome}
         >
           Back to home
         </button>
@@ -79,8 +83,7 @@ export default function LostItemCategory() {
         <button
           type="button"
           className="back-button"
-          aria-disabled="true"
-          // onClick={handleGoBack}
+          onClick={handleGoBack}
         >
           Go Back
         </button>
