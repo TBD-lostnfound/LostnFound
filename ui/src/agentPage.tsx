@@ -164,12 +164,12 @@ export default function AgentPage() {
   return (
     <div className="agent-page">
       <header className="agent-header">
-        <div className="agent-logo">
+        <a href="/" className="agent-logo">
           <span className="agent-logo-icon">
             <Search size={17} aria-hidden="true" />
           </span>
           <span>FoundYou</span>
-        </div>
+        </a>
 
         <button
           type="button"
