@@ -51,7 +51,9 @@ About 3 minutes. Auto-deploy on every merge to `main` is coming next; it runs th
 |---|---|---|
 | Photo reader | `GCS_BUCKET` | `lostnfound-370-images`: photos and `items.json` are saved in this private bucket, because Cloud Run's disk is wiped on every restart |
 | Photo reader | `OPENROUTER_API_KEY` | read from **Secret Manager** (`openrouter-api-key`), never from a file |
-| Agent | `MOCK_MODE` | `true` (no AI cost) |
+| Agent | `MOCK_MODE` | `false` (real AI) |
+| Agent | `OPENROUTER_MODEL` | `openai/gpt-6-luna` |
+| Agent | `OPENROUTER_API_KEY` | same Secret Manager key as the photo reader (`openrouter-api-key`, $5 cap) |
 | Agent | `IMAGE_BACKEND_URL` | the photo reader's URL |
 | Website | `AGENT_URL`, `IMAGES_URL` | where nginx forwards `/api/*` and `/images/*` |
 

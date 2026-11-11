@@ -56,7 +56,7 @@ steps:
       - --set-secrets=OPENROUTER_API_KEY=openrouter-api-key:latest
     waitFor: [push]
 
-  # 4. Agent: needs the photo reader's URL. Mock mode = no AI cost.
+  # 4. Agent: needs the photo reader's URL. Real AI, using the same key as the photo reader.
   - id: deploy-agent
     name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
     entrypoint: bash
@@ -70,7 +70,8 @@ steps:
           --service-account=${_RUN_SA} \
           --allow-unauthenticated \
           --max-instances=2 \
-          --set-env-vars=MOCK_MODE=true,IMAGE_BACKEND_URL=$$URL
+          --set-env-vars=MOCK_MODE=false,OPENROUTER_MODEL=openai/gpt-6-luna,IMAGE_BACKEND_URL=$$URL \
+          --set-secrets=OPENROUTER_API_KEY=openrouter-api-key:latest
     waitFor: [deploy-images]
 
   # 5. Website: the one front door. Its nginx forwards /api/* and /images/* to the other two,
