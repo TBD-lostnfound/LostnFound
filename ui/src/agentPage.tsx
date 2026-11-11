@@ -112,10 +112,11 @@ export default function AgentPage() {
         }),
       });
 
-      const data = await response.json();
+      // An empty or non-JSON reply means the agent server is down or unreachable.
+      const data = await response.json().catch(() => null);
 
-      if (!response.ok) {
-        throw new Error(data.error || "Could not reach the agent.");
+      if (!response.ok || !data) {
+        throw new Error(data?.error || `Agent request failed (${response.status})`);
       }
 
       // Keep the complete assistant/tool history for subsequent turns.
@@ -147,10 +148,10 @@ export default function AgentPage() {
         },
       ]);
     } catch (reason) {
+      // Keep the technical details in the console and show a plain message.
+      console.error("Agent chat failed:", reason);
       setError(
-        reason instanceof Error
-          ? reason.message
-          : "Something went wrong."
+        "We couldn't reach the FoundYou Agent. Please try again in a moment."
       );
 
       // Restore an unsuccessful message so it can be retried.
