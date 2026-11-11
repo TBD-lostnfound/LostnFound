@@ -1,7 +1,6 @@
 import { Search } from "lucide-react";
 
-// Design-only nav items. Connect these handlers when the related pages are ready.
-// const handleUpdates = () => {};
+// Design-only nav item. Connect this handler when sign-in is ready.
 // const handleSignIn = () => {};
 
 type Props = { current?: "about" };
@@ -17,9 +16,6 @@ export default function SiteHeader({ current }: Props) {
       <nav aria-label="Main navigation">
         <a href="/#how-it-works" className="site-nav-link">How it works</a>
         <a href="/about" className="site-nav-link" aria-current={current === "about" ? "page" : undefined}>About</a>
-        <button type="button" className="site-nav-link" aria-disabled="true"
-          // onClick={handleUpdates}
-        >Updates</button>
         <button type="button" className="site-sign-in" aria-disabled="true"
           // onClick={handleSignIn}
         >Sign In</button>
