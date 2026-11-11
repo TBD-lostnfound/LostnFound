@@ -10,12 +10,8 @@ import {
   UserCheck,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import SiteHeader from "./SiteHeader";
 import "./HomePage.css";
-
-// Design-only nav items. Connect these handlers when the related pages are ready.
-// const handleAbout = () => {};
-// const handleUpdates = () => {};
-// const handleSignIn = () => {};
 
 type Step = { icon: LucideIcon; title: string; text: string };
 
@@ -63,24 +59,7 @@ export default function Home() {
         <div className="home-glow home-glow-right" aria-hidden="true" />
         <div className="home-glow home-glow-left" aria-hidden="true" />
 
-        <header className="home-header">
-          <a href="/" className="fy-logo">
-            <span className="fy-logo-icon"><Search size={20} strokeWidth={2.4} aria-hidden="true" /></span>
-            FoundYou
-          </a>
-          <nav aria-label="Main navigation">
-            <a href="#how-it-works" className="home-nav-link">How it works</a>
-            <button type="button" className="home-nav-link" aria-disabled="true"
-              // onClick={handleAbout}
-            >About</button>
-            <button type="button" className="home-nav-link" aria-disabled="true"
-              // onClick={handleUpdates}
-            >Updates</button>
-            <button type="button" className="home-sign-in" aria-disabled="true"
-              // onClick={handleSignIn}
-            >Sign In</button>
-          </nav>
-        </header>
+        <SiteHeader />
 
         <div className="home-hero-content">
           <span className="home-eyebrow fy-rise">SECURE CAMPUS MATCHING</span>

@@ -4,6 +4,7 @@ import ReportItem from "./reportItem";
 import HomePage from "./HomePage";
 import LostCategory from "./lostItemCategory";
 import AgentPage from "./agentPage";
+import AboutPage from "./AboutPage";
 import "./globals.css";
 
 const page = window.location.pathname.replace(/\/+$/, "") || "/";
@@ -16,6 +17,8 @@ createRoot(document.getElementById("root")!).render(
       <AgentPage />
     ) : page === "/lost/category" ? (
       <LostCategory />
+    ) : page === "/about" ? (
+      <AboutPage />
     ) : (
       <HomePage />
     )}

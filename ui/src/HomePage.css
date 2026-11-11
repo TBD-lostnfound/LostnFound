@@ -6,14 +6,6 @@
 .home-glow-right { width: 520px; height: 520px; right: -140px; top: -160px; background: radial-gradient(circle, rgba(255, 165, 22, 0.28), transparent 68%); animation: fy-float 14s ease-in-out infinite; }
 .home-glow-left { width: 440px; height: 440px; left: -160px; bottom: -120px; background: radial-gradient(circle, rgba(255, 211, 138, 0.35), transparent 68%); animation: fy-float 18s ease-in-out infinite reverse; }
 
-.home-header { position: relative; max-width: 1240px; margin: 0 auto; padding: 26px 40px; display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
-.home-header .fy-logo { font-size: 22px; }
-.home-header .fy-logo-icon { width: 40px; height: 40px; }
-.home-header nav { display: flex; align-items: center; gap: 30px; flex-wrap: wrap; }
-.home-nav-link { padding: 8px 0; background: transparent; color: #45516a; font-size: 15px; font-weight: 600; text-decoration: none; cursor: pointer; transition: color .15s; }
-.home-nav-link:hover { color: var(--fy-ink); }
-.home-sign-in { padding: 11px 22px; border-radius: 999px; background: var(--fy-ink); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; transition: translate .2s, background-color .2s; }
-.home-sign-in:hover { translate: 0 -2px; background: #262a45; }
 
 .home-hero-content { position: relative; max-width: 960px; margin: 0 auto; padding: 64px 24px 56px; text-align: center; display: flex; flex-direction: column; align-items: center; }
 .home-eyebrow { display: inline-block; padding: 9px 18px; border-radius: 999px; background: var(--fy-orange-soft); color: var(--fy-orange-ink); font-size: 13px; font-weight: 800; letter-spacing: .8px; }
@@ -64,10 +56,6 @@
 .home-footer { max-width: 1240px; margin: 0 auto; padding: 28px 40px; border-top: 1px solid var(--fy-line); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; color: var(--fy-subtle); font-size: 14px; }
 
 @media (max-width: 720px) {
-  .home-header { padding: 20px; }
-  .home-header nav { gap: 16px; }
-  .home-nav-link { font-size: 14px; }
-  .home-sign-in { padding: 9px 16px; font-size: 14px; }
   .home-hero-content { padding: 40px 20px 44px; }
   .home h1 { letter-spacing: -1.4px; }
   .home-intro { font-size: 17px; }
