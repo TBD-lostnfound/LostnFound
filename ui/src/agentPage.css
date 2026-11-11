@@ -271,6 +271,30 @@
   display: flex;
   align-items: flex-end;
   gap: 10px;
+  animation: fy-rise 0.3s ease-out both;
+}
+
+/* Three bouncing dots while the agent is replying. */
+.agent-typing {
+  display: flex;
+  gap: 5px;
+  padding: 18px;
+}
+
+.agent-typing > span[aria-hidden] {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #929eb4;
+  animation: fy-typing 1.2s ease-in-out infinite;
+}
+
+.agent-typing > span:nth-of-type(3) {
+  animation-delay: 0.15s;
+}
+
+.agent-typing > span:nth-of-type(4) {
+  animation-delay: 0.3s;
 }
 
 .agent-message.user {
@@ -394,6 +418,11 @@
   border-radius: 50%;
   background: #ffa516;
   color: white;
+}
+
+.agent-send-button:not(:disabled):hover {
+  translate: 0 -1px;
+  box-shadow: 0 6px 16px rgba(255, 165, 22, 0.35);
 }
 
 .agent-see-all {

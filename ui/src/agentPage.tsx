@@ -334,7 +334,15 @@ export default function AgentPage() {
             ))}
 
             {busy && (
-              <p role="status">Searching reports…</p>
+              <div className="agent-message assistant" role="status">
+                <span className="agent-avatar" aria-hidden="true" />
+                <p className="agent-bubble agent-typing">
+                  <span className="agent-sr-only">Searching reports…</span>
+                  <span aria-hidden="true" />
+                  <span aria-hidden="true" />
+                  <span aria-hidden="true" />
+                </p>
+              </div>
             )}
 
             {error && (

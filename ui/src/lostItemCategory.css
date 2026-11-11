@@ -135,13 +135,18 @@ body {
   border-radius: 21px;
   background: white;
   color: #151729;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.15s, box-shadow 0.2s, background-color 0.25s, translate 0.2s, scale 0.12s;
 }
 
 .category-card:hover,
 .category-card:focus-visible {
   border-color: #ffa516;
-  box-shadow: 0 0 0 1px #ffa516;
+  box-shadow: 0 0 0 1px #ffa516, 0 8px 20px rgba(21, 23, 41, 0.08);
+  translate: 0 -2px;
+}
+
+.category-icon {
+  transition: background-color 0.25s, color 0.25s;
 }
 
 .category-card.selected {
@@ -212,6 +217,11 @@ body {
 .continue-button {
   background: #ffa516;
   color: white;
+}
+
+.continue-button:hover {
+  translate: 0 -1px;
+  box-shadow: 0 6px 16px rgba(255, 165, 22, 0.35);
 }
 
 /* Tablet */
