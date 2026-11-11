@@ -25,10 +25,26 @@ const safeguards = [
   { title: "Owners confirm details only they would know", text: "before a return is arranged." },
 ];
 
-// Placeholders until the team has real campus figures.
+// Each figure links to where it comes from.
 const wasteStats = [
-  { value: "[X]%", label: "of items turned in on campus are never claimed" },
-  { value: "[X]", label: "items sent to donation or landfill each term" },
+  {
+    value: "About 1 in 4",
+    label: "lost items is ever reclaimed by its owner",
+    source: "University of Rochester Campus Times",
+    href: "https://www.campustimes.org/2016/10/30/ur-guide-to-lost-and-found/",
+  },
+  {
+    value: "$2.7 billion",
+    label: "spent by Americans each year replacing lost items",
+    source: "Pixie Lost & Found survey, 2017",
+    href: "https://prnewswire.com/news-releases/lost-and-found-the-average-american-spends-25-days-each-year-looking-for-lost-items-collectively-costing-us-households-27-billion-annually-in-replacement-costs-300449305.html",
+  },
+  {
+    value: "22%",
+    label: "of the world's e-waste is documented as properly recycled",
+    source: "UN Global E-waste Monitor 2024",
+    href: "https://unitar.org/about/news-stories/press/global-e-waste-monitor-2024-electronic-waste-rising-five-times-faster-documented-e-waste-recycling",
+  },
 ];
 
 export default function AboutPage() {
@@ -65,17 +81,17 @@ export default function AboutPage() {
             <div className="about-waste-text">
               <span className="about-waste-tag"><Leaf size={15} strokeWidth={2.2} aria-hidden="true" />Sustainability</span>
               <h3>It's wasteful</h3>
-              <p>Items that never find their owner are often donated or thrown away, and their owners buy replacements. Water bottles, chargers, headphones and laptops all take materials and energy to make and ship, and lost electronics add to e-waste.</p>
+              <p>Most lost items never make it back. On many campuses, anything unclaimed after about 30 days is donated or thrown away, and owners buy replacements instead. Water bottles, chargers, headphones and laptops all take materials and energy to make, and lost electronics add to a global e-waste problem: 62 million tonnes in 2022, most of it never properly recycled.</p>
               <p className="about-waste-point">Getting an item back keeps it in use. It's the simplest way to reuse instead of replace.</p>
             </div>
             <div className="about-waste-stats">
-              {wasteStats.map(({ value, label }) => (
+              {wasteStats.map(({ value, label, source, href }) => (
                 <div key={label} className="about-stat">
                   <strong>{value}</strong>
                   <span>{label}</span>
+                  <a href={href} target="_blank" rel="noreferrer">Source: {source}</a>
                 </div>
               ))}
-              <p className="about-stat-note">Placeholders: replace with real figures from campus lost and found or your survey.</p>
             </div>
           </div>
         </div>
@@ -111,10 +127,6 @@ export default function AboutPage() {
                 <span><strong>{title}</strong> {text}</span>
               </li>
             ))}
-            <li className="placeholder">
-              <span className="about-check">?</span>
-              <span><strong>After an item is returned:</strong> [say how long reports and photos are kept, and when they're deleted].</span>
-            </li>
           </ul>
         </div>
       </section>

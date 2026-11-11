@@ -19,7 +19,7 @@ Pages and navigation:
 | URL | Component | Purpose |
 | --- | --- | --- |
 | `/` | `HomePage` | Homepage with the two report buttons and a How it works section for both the lost and found flows. |
-| `/about` | `AboutPage` | What FoundYou is, the problem it solves (including waste from unclaimed items), what makes it different, and trust and safety. The `[X]` figures and the data-retention line are placeholders, and Send feedback is not connected yet. |
+| `/about` | `AboutPage` | What FoundYou is, the problem it solves (including waste from unclaimed items), what makes it different, and trust and safety. Each waste figure links to its source. Send feedback is not connected yet. |
 | `/found/report` | `ReportItem` | Found item photo and details form. |
 | `/lost/category` | `LostItemCategory` | First step of the lost item flow, showing six item categories. |
 | `/lost/agent` | `AgentPage` | Chat with the FoundYou agent to describe the lost item and see possible matches. |
