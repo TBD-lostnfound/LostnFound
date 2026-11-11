@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { ArrowRight, Check, Search } from "lucide-react";
 import { categories } from "./categories";
 import "./lostItemCategory.css";
 
@@ -24,35 +24,48 @@ export default function LostItemCategory() {
 
   return (
     <div className="category-page">
-      <header className="page-header">
-        <a href="/" className="logo">
-          <span className="logo-icon">
-            <Search size={17} aria-hidden="true" />
-          </span>
-          <span>FoundYou</span>
-        </a>
+      <header className="fy-header">
+        <div className="fy-header-inner">
+          <a href="/" className="fy-logo">
+            <span className="fy-logo-icon">
+              <Search size={19} strokeWidth={2.4} aria-hidden="true" />
+            </span>
+            FoundYou
+          </a>
 
-        <button
-          type="button"
-          className="home-button"
-          onClick={handleBackHome}
-        >
-          Back to home
-        </button>
+          <ol className="fy-progress" aria-label="Step 1 of 3">
+            <li className="done" />
+            <li />
+            <li />
+          </ol>
+
+          <button
+            type="button"
+            className="fy-back-link"
+            onClick={handleBackHome}
+          >
+            Back to home
+          </button>
+        </div>
       </header>
 
       <main className="category-main">
-        <span className="step-label">
+        <span className="step-label fy-rise">
           STEP 1 OF 3 · NARROW DOWN SEARCH
         </span>
 
-        <h1>Tell us what you lost.</h1>
+        <h1 className="fy-rise fy-delay-1">
+          Tell us what you <span className="fy-highlight">lost.</span>
+        </h1>
 
-        <p className="page-description">
-          Select a category to help narrow down the visual matching database.
+        <p className="page-description fy-rise fy-delay-2">
+          Pick a category so the agent only searches the right kind of item.
         </p>
 
-        <div className="category-grid" aria-label="Lost item categories">
+        <div
+          className="category-grid fy-rise fy-delay-3"
+          aria-label="Lost item categories"
+        >
           {categories.map(({ id, label, icon: Icon }) => {
             const isSelected = selectedCategory === id;
 
@@ -65,13 +78,20 @@ export default function LostItemCategory() {
                 onClick={() => setSelectedCategory(id)}
               >
                 <span className="category-icon">
-                  <Icon size={20} strokeWidth={1.5} aria-hidden="true" />
+                  <Icon size={23} strokeWidth={1.8} aria-hidden="true" />
                 </span>
 
                 <span className="category-name">{label}</span>
 
                 <span className="category-hint">
-                  {isSelected ? "Selected category" : "Click to select"}
+                  {isSelected ? (
+                    <>
+                      <Check size={14} strokeWidth={3} aria-hidden="true" />
+                      Selected
+                    </>
+                  ) : (
+                    "Click to select"
+                  )}
                 </span>
               </button>
             );
@@ -80,21 +100,24 @@ export default function LostItemCategory() {
       </main>
 
       <footer className="page-footer">
-        <button
-          type="button"
-          className="back-button"
-          onClick={handleGoBack}
-        >
-          Go Back
-        </button>
+        <div className="page-footer-inner">
+          <button
+            type="button"
+            className="fy-btn fy-btn-secondary"
+            onClick={handleGoBack}
+          >
+            Go Back
+          </button>
 
-        <button
-          type="button"
-          className="continue-button"
-          onClick={handleContinue}
-        >
-          Continue
-        </button>
+          <button
+            type="button"
+            className="fy-btn fy-btn-primary"
+            onClick={handleContinue}
+          >
+            Continue
+            <ArrowRight size={16} strokeWidth={2.4} aria-hidden="true" />
+          </button>
+        </div>
       </footer>
     </div>
   );

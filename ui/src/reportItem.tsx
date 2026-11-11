@@ -114,30 +114,32 @@ export default function ReportItem() {
 
   return (
     <div className="report-page">
-      <header className="report-header">
-        <a className="report-logo" href="/" aria-label="FoundYou home"><span><Search size={18} aria-hidden="true" /></span>FoundYou</a>
-        <a className="report-home" href="/">Back to home</a>
+      <header className="fy-header">
+        <div className="fy-header-inner report-header-inner">
+          <a className="fy-logo" href="/"><span className="fy-logo-icon"><Search size={19} strokeWidth={2.4} aria-hidden="true" /></span>FoundYou</a>
+          <a className="fy-back-link" href="/">Back to home</a>
+        </div>
       </header>
       <main className="report-layout">
         <aside className="report-upload">
-          <div className={`report-photo-ring${preview ? " has-photo" : ""}`}>
+          <div className={`report-photo-ring fy-rise${preview ? " has-photo" : ""}`}>
             <div className="report-photo-circle">{preview ? <img src={preview} alt="Selected found item" /> : <Camera size={38} strokeWidth={1.7} aria-hidden="true" />}</div>
           </div>
-          <h2>Upload a photo of the item</h2>
-          <p>Take a photo or upload from your device —<br />we’ll help identify and match it with lost reports.</p>
+          <h2 className="fy-rise fy-delay-1">Upload a photo of the item</h2>
+          <p className="fy-rise fy-delay-1">Take a photo or upload one. We’ll help identify it and match it with lost reports.</p>
           <input ref={fileInput} className="report-file" type="file" accept="image/*" aria-label="Upload a photo of the item" onChange={(event) => {
             const file = event.target.files?.[0];
             if (!file) return;
             if (!file.type.startsWith("image/")) { setMessage("Please choose an image file."); event.target.value = ""; return; }
             setPhoto(file); setMessage("");
           }} />
-          <button className="report-add-photo" type="button" onClick={() => fileInput.current?.click()}><Upload size={15} aria-hidden="true" />{photo ? "Change Photo" : "Add Photo"}</button>
+          <button className="fy-btn fy-btn-primary report-add-photo fy-rise fy-delay-2" type="button" onClick={() => fileInput.current?.click()}><Upload size={15} aria-hidden="true" />{photo ? "Change Photo" : "Add Photo"}</button>
           <p className="report-privacy"><ShieldCheck size={15} aria-hidden="true" /><span>Only shown to a verified match — never posted publicly.</span></p>
         </aside>
         <section className="report-details">
-          <h1>Add a few details</h1>
-          <p className="report-description">A couple of quick fields help the right person find it faster.</p>
-          <form onSubmit={submit} onChange={() => setMessage("")}>
+          <h1 className="fy-rise">Add a few details</h1>
+          <p className="report-description fy-rise fy-delay-1">A couple of quick fields help the right person find it faster.</p>
+          <form className="fy-rise fy-delay-2" onSubmit={submit} onChange={() => setMessage("")}>
             <fieldset className="report-row"><legend>What is it?</legend><div className="report-category-options">{categories.map((item) => <button type="button" key={item} className={`report-chip${category === item ? " is-selected" : ""}`} aria-pressed={category === item} onClick={() => { setCategory(item); setMessage(""); }}>{item}</button>)}</div></fieldset>
             <fieldset className="report-row">
               <legend>Color <span className="report-legend-hint">Pick all that apply</span></legend>
@@ -152,8 +154,8 @@ export default function ReportItem() {
               <p className="report-hint" aria-live="polite">{selectedColors.length || textColors.length ? <>Matched as: <strong>{[...new Set([...selectedColors, ...textColors])].map(titleCase).join(", ")}</strong></> : "No color picked yet"}</p>
             </fieldset>
             <div className="report-middle-row">
-              <div><label className="report-label" htmlFor="found-location">Where did you find it?</label><div className="report-location"><MapPin size={17} aria-hidden="true" /><input id="found-location" required maxLength={200} value={location} onChange={(event) => setLocation(event.target.value)} placeholder="e.g., Library, 2nd floor" pattern=".*\S.*" /></div></div>
-              <fieldset>
+              <div className="report-card"><label className="report-label" htmlFor="found-location">Where did you find it?</label><div className="report-location"><MapPin size={17} aria-hidden="true" /><input id="found-location" required maxLength={200} value={location} onChange={(event) => setLocation(event.target.value)} placeholder="e.g., Library, 2nd floor" pattern=".*\S.*" /></div></div>
+              <fieldset className="report-card">
                 <legend>When did you find it?</legend>
                 <div className="report-days">{[["Today", localDate()], ["Yesterday", localDate(1)]].map(([label, value]) => <button key={label} type="button" className={`report-day${date === value ? " is-selected" : ""}`} aria-pressed={date === value} onClick={() => { setDate(value); setMessage(""); }}>{label}</button>)}</div>
                 <div className="report-when-inputs">
@@ -163,9 +165,11 @@ export default function ReportItem() {
                 <p className="report-hint" aria-live="polite">{describeWhen(date, time)}</p>
               </fieldset>
             </div>
-            <label className="report-label" htmlFor="found-details">Additional details (optional)</label>
-            <textarea id="found-details" value={details} maxLength={2000} onChange={(event) => setDetails(event.target.value)} placeholder="e.g., brand, keychain, stickers, or anything unique..." />
-            <button className="report-submit" type="submit">Submit found item <ArrowRight size={18} aria-hidden="true" /></button>
+            <div className="report-card">
+              <label className="report-label" htmlFor="found-details">Additional details (optional)</label>
+              <textarea id="found-details" value={details} maxLength={2000} onChange={(event) => setDetails(event.target.value)} placeholder="e.g., brand, keychain, stickers, or anything unique..." />
+            </div>
+            <button className="fy-btn fy-btn-primary report-submit" type="submit">Submit found item <ArrowRight size={18} aria-hidden="true" /></button>
             {message && <p className="report-message" role="status">{message}</p>}
           </form>
         </section>

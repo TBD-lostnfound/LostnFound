@@ -1,67 +1,80 @@
-:root { color-scheme: light; --background: #0b0f17; --foreground: #fafbff; --cyan: #20d8ed; }
+/* FoundYou "Daylight" design: shared colors, type and building blocks used by every page. */
+:root {
+  color-scheme: light;
+  --fy-bg: #fbf8f3;          /* warm off-white page background */
+  --fy-surface: #ffffff;     /* cards and panels */
+  --fy-surface-soft: #f6f1e8;/* agent bubbles, icon tiles */
+  --fy-ink: #151729;         /* main text, navy panels */
+  --fy-muted: #5a6478;       /* body text */
+  --fy-subtle: #6b7486;      /* labels, hints */
+  --fy-line: #ebe6dc;        /* borders */
+  --fy-line-strong: #e2ddd3; /* button outlines */
+  --fy-orange: #ffa516;      /* brand accent; always with dark text */
+  --fy-orange-soft: #fff0d6; /* tinted pills and selected states */
+  --fy-orange-ink: #8a5200;  /* orange text on light backgrounds */
+  --fy-highlight: #ffd38a;   /* highlighter underline */
+  --fy-font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
 * { box-sizing: border-box; }
 html, body { margin: 0; min-height: 100%; }
-body { font-family: Arial, Helvetica, sans-serif; -webkit-font-smoothing: antialiased; background: #fff; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--fy-font); color: var(--fy-ink); background: var(--fy-bg); -webkit-font-smoothing: antialiased; }
 button { font: inherit; border: 0; cursor: default; font-weight: 600; white-space: nowrap; }
 button:not([aria-disabled="true"]) { cursor: pointer; }
-button:focus-visible { outline: 3px solid #ffa000; outline-offset: 5px; }
-.dark-section { color: var(--foreground); min-height: 990px; background: radial-gradient(ellipse 600px 540px at 96% 10%, #103640 0%, transparent 85%), var(--background); }
-.header { max-width: 1760px; margin: auto; padding: 58px 84px 0; display: flex; align-items: center; justify-content: space-between; }
-.brand { color: inherit; text-decoration: none; display: flex; align-items: center; gap: 20px; font-size: 34px; font-weight: 700; letter-spacing: -.7px; }
-.brand-icon { display: grid; place-items: center; width: 58px; height: 56px; border-radius: 15px; color: #07121c; background: var(--cyan); }
-nav { display: flex; gap: 52px; align-items: center; }
-.nav-button { padding: 10px 0; background: transparent; color: #aab4c3; font-size: 21px; }
-nav button { cursor: pointer; transition: color .15s, background .15s, scale .12s; }
-.nav-button:hover { color: #fafbff; }
-.sign-in:hover { background: #e9ecf2; }
-.sign-in { padding: 16px 32px; border-radius: 36px; color: #0b0f17; background: #fff; font-size: 20px; }
-.hero { margin: 134px auto 0; padding: 0 24px 40px; text-align: center; }
-.eyebrow { display: inline-block; padding: 15px 30px; border-radius: 32px; background: #112e38; color: #28ddef; font-size: 20px; font-weight: 700; }
-h1 { margin: 52px 0 42px; font-size: clamp(42px, 4.55vw, 80px); line-height: 1.14; letter-spacing: -2px; font-weight: 750; }
-.intro { margin: 0 auto; color: #b8bfcd; font-size: 27px; line-height: 1.55; letter-spacing: .1px; }
-.report-actions { display: flex; justify-content: center; gap: 16px; margin-top: 55px; }
-.report-button { display: inline-flex; align-items: center; justify-content: center; gap: 26px; width: 468px; min-height: 112px; padding: 24px 36px; border-radius: 60px; font-size: 30px; }
-.report-button svg { flex-shrink: 0; }
-.lost { border: 3px solid #555861; background: transparent; color: #fafbff; cursor: pointer; }
-.lost, .found { transition: background .2s, border-color .2s, translate .2s, box-shadow .2s, scale .12s; }
-.lost:hover { background: #ffffff08; border-color: #8b919d; translate: 0 -2px; }
-.found:hover { translate: 0 -2px; box-shadow: 0 10px 30px #20d8ed40; }
-.found { background: var(--cyan); color: #07121c; border: 3px solid var(--cyan); }
-.trust-line { margin: 102px 0 0; color: #747e8e; font-size: 20px; line-height: 1.5; }
-.stats { background: #fff; padding: 118px 30px 138px; }
-.stats-inner { max-width: 1420px; margin: auto; display: grid; grid-template-columns: 1fr 1fr 1fr; }
-.stat { display: flex; align-items: center; justify-content: center; gap: 20px; position: relative; }
-.stat + .stat::before { content: ''; position: absolute; left: 0; height: 62px; width: 1px; background: #e3e6ec; }
-.stat-icon { width: 78px; height: 78px; border-radius: 20px; color: #ff9a00; background: #fff4df; display: grid; place-items: center; flex-shrink: 0; }
-.stat strong { display: block; color: #141728; font-size: 34px; letter-spacing: -.7px; line-height: 1.2; }
-.stat p { color: #626d82; font-size: 20px; margin: 3px 0 0; line-height: 1.4; }
-@media (max-width: 1100px) { .header { padding: 36px 40px 0; } .hero { margin-top: 110px; } .intro { font-size: 22px; } .report-button { width: 360px; min-height: 88px; font-size: 24px; gap: 18px; } .dark-section { min-height: auto; } .stat strong { font-size: 28px; } .stat p { font-size: 16px; } .stat-icon { width: 60px; height: 60px; } }
-@media (max-width: 720px) { .header { padding: 26px 24px 0; } nav { gap: 18px; } .brand { font-size: 22px; gap: 12px; } .brand-icon { width: 40px; height: 40px; border-radius: 12px; } .brand-icon svg { width: 23px; } .nav-button { font-size: 14px; } .sign-in { padding: 11px 18px; font-size: 14px; } .hero { margin-top: 90px; } .eyebrow { font-size: 14px; padding: 12px 20px; } h1 { margin: 36px 0 28px; letter-spacing: -1px; } .intro { font-size: 18px; max-width: 520px; } .desktop-break { display: none; } .report-actions { flex-wrap: wrap; margin-top: 36px; } .report-button { width: min(100%, 360px); min-height: 76px; font-size: 22px; } .report-button svg { width: 28px; height: 28px; } .stats { padding: 60px 24px; } .stats-inner { gap: 34px; grid-template-columns: 1fr; max-width: 300px; } .stat { justify-content: flex-start; } .stat + .stat::before { display: none; } .trust-line { margin-top: 68px; font-size: 15px; } }
-@media (max-width: 480px) { .header { padding: 24px 18px 0; flex-wrap: wrap; gap: 22px; } .hero { padding: 0 18px 32px; margin-top: 65px; } h1 { font-size: 36px; } }
+:where(a, button, input, textarea):focus-visible { outline: 3px solid var(--fy-orange); outline-offset: 3px; }
+
+/* Header shared by every page: logo on the left, links on the right. */
+.fy-header { border-bottom: 1px solid var(--fy-line); background: var(--fy-bg); }
+.fy-header-inner { max-width: 1240px; margin: 0 auto; padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.fy-logo { display: flex; align-items: center; gap: 12px; color: var(--fy-ink); text-decoration: none; font-size: 21px; font-weight: 800; letter-spacing: -0.5px; }
+.fy-logo-icon { width: 38px; height: 38px; border-radius: 12px; background: var(--fy-orange); color: var(--fy-ink); display: grid; place-items: center; flex-shrink: 0; }
+.fy-back-link { padding: 8px 0; background: transparent; color: #45516a; font-size: 14px; font-weight: 700; text-decoration: underline; text-decoration-color: #c9c2b4; text-underline-offset: 5px; }
+.fy-back-link:hover { color: var(--fy-ink); text-decoration-color: currentColor; }
+
+/* Three-step progress bar for the lost item flow. */
+.fy-progress { display: flex; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.fy-progress li { width: 64px; height: 6px; border-radius: 99px; background: #ebe3d4; }
+.fy-progress li.done { background: var(--fy-orange); }
+
+/* Buttons. Orange always carries dark text so it stays readable. */
+.fy-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 50px; padding: 0 26px; border-radius: 16px; font-size: 15px; font-weight: 800; text-decoration: none; transition: translate .2s ease, box-shadow .2s ease, border-color .2s ease, background-color .2s ease, scale .12s ease; }
+.fy-btn-primary { background: var(--fy-orange); color: var(--fy-ink); }
+.fy-btn-primary:hover { translate: 0 -2px; box-shadow: 0 14px 30px rgba(255, 165, 22, 0.35); }
+.fy-btn-secondary { background: var(--fy-surface); color: var(--fy-ink); border: 1.5px solid var(--fy-line-strong); font-weight: 700; }
+.fy-btn-secondary:hover { translate: 0 -2px; border-color: var(--fy-ink); }
+.fy-btn:disabled { opacity: .55; translate: none; box-shadow: none; }
+
+.fy-highlight { background: linear-gradient(transparent 62%, var(--fy-highlight) 62%); }
+.fy-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .fy-header-inner { padding: 16px 20px; }
+  /* Logo and back link share the top row; the progress bar gets its own row. */
+  .fy-progress { order: 3; width: 100%; }
+  .fy-progress li { flex: 1; width: auto; }
+}
 
 /* Animations shared by every page. Kept short and subtle. */
-@keyframes fy-rise { from { opacity: 0; translate: 0 12px; } to { opacity: 1; translate: 0 0; } }
+@keyframes fy-rise { from { opacity: 0; translate: 0 14px; } to { opacity: 1; translate: 0 0; } }
 @keyframes fy-typing { 0%, 60%, 100% { opacity: .3; translate: 0 0; } 30% { opacity: 1; translate: 0 -3px; } }
+@keyframes fy-float { 0%, 100% { translate: 0 0; scale: 1; } 50% { translate: 24px -18px; scale: 1.06; } }
+@keyframes fy-bounce { 0%, 100% { translate: 0 0; } 50% { translate: 0 7px; } }
+@keyframes fy-spin { to { rotate: 360deg; } }
 
-/* Pages fade and slide up slightly when they open. */
-.category-page, .agent-page, .report-page { animation: fy-rise .35s ease-out both; }
-
-/* Homepage hero: headline, text and buttons come in one after another. */
-.hero > * { animation: fy-rise .6s ease-out both; }
-.hero > :nth-child(2) { animation-delay: .08s; }
-.hero > :nth-child(3) { animation-delay: .16s; }
-.hero > :nth-child(4) { animation-delay: .24s; }
-.hero > :nth-child(5) { animation-delay: .32s; }
+/* Page content fades and slides up when a page opens. */
+.fy-rise { animation: fy-rise .6s cubic-bezier(.2, .7, .2, 1) both; }
+.fy-delay-1 { animation-delay: .08s; }
+.fy-delay-2 { animation-delay: .16s; }
+.fy-delay-3 { animation-delay: .24s; }
+.fy-delay-4 { animation-delay: .34s; }
 
 /* Working buttons shrink slightly when pressed. :where() keeps this from overriding page styles. */
 :where(button:not([aria-disabled="true"], :disabled)) { transition: scale .12s ease, translate .15s ease, box-shadow .15s ease, background-color .15s, border-color .15s, color .15s; }
-:where(button:not([aria-disabled="true"], :disabled)):active { scale: .97; }
-
-/* Found item form buttons lift slightly on hover. Kept here so reportItem.css stays untouched. */
-.report-add-photo:hover, .report-submit:hover { translate: 0 -1px; box-shadow: 0 6px 16px rgba(238, 170, 8, 0.35); }
-.report-chip, .report-day { transition: background-color .2s, border-color .2s, color .2s, scale .12s; }
+:where(button:not([aria-disabled="true"], :disabled), .fy-btn):active { scale: .97; }
 
 /* People who turn on "reduce motion" in their device settings get no movement. */
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }

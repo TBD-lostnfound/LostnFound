@@ -164,21 +164,29 @@ export default function AgentPage() {
 
   return (
     <div className="agent-page">
-      <header className="agent-header">
-        <a href="/" className="agent-logo">
-          <span className="agent-logo-icon">
-            <Search size={17} aria-hidden="true" />
-          </span>
-          <span>FoundYou</span>
-        </a>
+      <header className="fy-header agent-header">
+        <div className="fy-header-inner">
+          <a href="/" className="fy-logo">
+            <span className="fy-logo-icon">
+              <Search size={19} strokeWidth={2.4} aria-hidden="true" />
+            </span>
+            FoundYou
+          </a>
 
-        <button
-          type="button"
-          className="agent-back-button"
-          onClick={handleBack}
-        >
-          Back
-        </button>
+          <ol className="fy-progress" aria-label="Step 2 of 3">
+            <li className="done" />
+            <li className="done" />
+            <li />
+          </ol>
+
+          <button
+            type="button"
+            className="fy-back-link"
+            onClick={handleBack}
+          >
+            Back
+          </button>
+        </div>
       </header>
 
       <div className="agent-layout">
@@ -263,7 +271,7 @@ export default function AgentPage() {
         <main className="agent-chat">
           <div className="agent-chat-header">
             <span className="agent-avatar large">
-              <Sparkles size={18} aria-hidden="true" />
+              <Sparkles size={19} aria-hidden="true" />
             </span>
             <div>
               <div className="agent-name">FoundYou Agent</div>
@@ -347,7 +355,7 @@ export default function AgentPage() {
             )}
 
             {error && (
-              <p role="alert" style={{ color: "crimson" }}>
+              <p role="alert" className="agent-error">
                 {error}
               </p>
             )}
