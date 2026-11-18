@@ -3,6 +3,7 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
 import { relative } from "node:path";
 import { config } from "./config.js";
+import { FinderReport } from "./schema.js";
 import { ingestPhoto } from "./pipeline/ingest.js";
 import { getImage, getItem, listItems } from "./store.js";
 
@@ -18,11 +19,25 @@ app.post("/api/items", async (c) => {
   const photo = body.photo;
   if (!(photo instanceof File)) return c.json({ error: "Send the image as multipart field 'photo'." }, 400);
   if (photo.size > MAX_UPLOAD_BYTES) return c.json({ error: "Photo is over 15 MB." }, 413);
+  if (photo.size === 0 || !photo.type.startsWith("image/")) {
+    return c.json({ error: "Choose a non-empty image file." }, 400);
+  }
+  let report: FinderReport | undefined;
+  if (body.report !== undefined) {
+    if (typeof body.report !== "string") return c.json({ error: "Invalid report." }, 400);
+    try {
+      const parsed = FinderReport.safeParse(JSON.parse(body.report));
+      if (!parsed.success) return c.json({ error: "Please check your report details." }, 400);
+      report = parsed.data;
+    } catch {
+      return c.json({ error: "Report must contain valid JSON." }, 400);
+    }
+  }
   try {
     const item = await ingestPhoto(Buffer.from(await photo.arrayBuffer()), {
       lat: num(body.device_lat), lng: num(body.device_lng),
       time: typeof body.device_time === "string" ? body.device_time : undefined,
-    });
+    }, report);
     return c.json(item, 201);
   } catch (e) {
     console.error(e);
@@ -42,6 +57,6 @@ app.get("/images/:name", async (c) => {
 });
 app.use("/*", serveStatic({ root: relative(process.cwd(), config.publicDir) }));
 
-serve({ fetch: app.fetch, port: config.port }, () => {
+export const server = serve({ fetch: app.fetch, port: config.port }, () => {
   console.log(`FoundYou image recognition on http://localhost:${config.port} (vision: ${config.visionModel}, key ${config.openrouterKey ? "set" : "MISSING"})`);
 });

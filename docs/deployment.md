@@ -68,4 +68,4 @@ Nothing changes. Without `GCS_BUCKET`, the photo reader still uses the local `im
 - The photo reader runs **max 1 instance**, because `items.json` has no locking. Move to a database behind
   `image-recognition/src/store.ts` if we need more.
 - The upload endpoint and photos are public to anyone with the URL.
-- The website's chat isn't connected to the agent yet. When it is, call `/api/chat` (no full URL needed).
+- The website chat calls `/api/chat`, and the found-item form uploads to `/api/items` through the same website URL. Match photos use `/images/...`.

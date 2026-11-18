@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
-    "selfcheck": "tsx src/selfcheck.ts",
+    "selfcheck": "node --import tsx src/selfcheck.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

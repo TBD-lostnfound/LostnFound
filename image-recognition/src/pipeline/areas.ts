@@ -20,6 +20,7 @@ const AREAS: Record<string, [number, number][]> = {
   "Parking decks": [[33.78901, -84.32255], [33.79137, -84.31907], [33.7947, -84.32309]],
 };
 const MAX_DISTANCE_M = 150;
+export const CAMPUS_AREAS = Object.keys(AREAS);
 
 function meters(a: [number, number], b: [number, number]) {
   const R = 6371000, rad = Math.PI / 180;

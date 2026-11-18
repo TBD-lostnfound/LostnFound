@@ -77,7 +77,7 @@ async function loadRecords(): Promise<Record_[]> {
       brand: item.brand ?? null,
       description: item.caption,
       area: item.area ?? "",
-      location_detail: null,
+      location_detail: item.finder_report?.location ?? null,
       found_at: item.found_at,
       image_url: new URL(item.image_url, `${base}/`).href,
     },
@@ -163,6 +163,7 @@ export async function search_items(rawArgs: SearchArgs) {
   const records = await loadRecords();
 
   const lostAfter = args.lost_after ? Date.parse(args.lost_after) : NaN;
+  const lostDay = Number.isNaN(lostAfter) ? "" : new Date(lostAfter).toLocaleDateString("en-CA", { timeZone: "America/New_York" });
   const wantColors = (args.colors ?? []).map((c: string) => c.toLowerCase());
   const wantBrand = args.brand?.trim().toLowerCase();
   const wantWords = args.keywords ? [...new Set(words(args.keywords))] : [];
@@ -171,7 +172,12 @@ export async function search_items(rawArgs: SearchArgs) {
     .filter((r) => r.server_only.status === "available")
     .filter((r) => r.public.item_type === args.item_type)
     .filter((r) => !args.area || r.public.area === args.area)
-    .filter((r) => Number.isNaN(lostAfter) || Date.parse(r.public.found_at) >= lostAfter)
+    .filter((r) => {
+      if (Number.isNaN(lostAfter)) return true;
+      // Without a found time, keep the entire reported Eastern calendar day eligible.
+      const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(r.public.found_at);
+      return dateOnly ? r.public.found_at >= lostDay : Date.parse(r.public.found_at) >= lostAfter;
+    })
     .map((r) => {
       let score = 0;
       for (const c of r.public.colors) if (wantColors.includes(c)) score += WEIGHTS.color;

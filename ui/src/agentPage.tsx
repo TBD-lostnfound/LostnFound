@@ -10,14 +10,17 @@ import {
 import "./agentPage.css";
 import { categories } from "./categories";
 
-// Match cards use the same fields as the server's get_item result
-// (see server/src/tools.ts), so real items can replace these later.
+// Public fields returned by the agent's get_item tool.
 type FoundItem = {
   id: string;
   item_type: string;
   colors: string[];
   area: string;
   found_at: string;
+  image_url?: string;
+  description?: string;
+  brand?: string | null;
+  location_detail?: string | null;
 };
 
 type Message = {
@@ -32,24 +35,21 @@ type RawMessage = {
   [key: string]: unknown;
 };
 
-// Color and location will come from the details collected during the chat.
-const reportSummary: {
+type ReportSummary = {
   color: { label: string; swatch: string } | null;
   location: string | null;
-} = {
-  color: null,
-  location: null,
 };
+
+// Load item photos through the website proxy in both local and cloud deployments.
+function itemPhoto(url?: string) {
+  try {
+    const path = new URL(url ?? "", window.location.origin).pathname;
+    return /^\/images\/item_\d+\.jpg$/.test(path) ? path : undefined;
+  } catch { return undefined; }
+}
 
 function capitalize(text: string) {
   return text.charAt(0).toUpperCase() + text.slice(1);
-}
-
-function daysAgo(isoDate: string) {
-  const days = Math.floor((Date.now() - Date.parse(isoDate)) / (24 * 60 * 60 * 1000));
-  if (days <= 0) return "today";
-  if (days === 1) return "1 day ago";
-  return `${days} days ago`;
 }
 
 export default function AgentPage() {
@@ -62,6 +62,17 @@ export default function AgentPage() {
   const [history, setHistory] = useState<RawMessage[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [reportSummary, setReportSummary] = useState<ReportSummary>({ color: null, location: null });
+  const [details, setDetails] = useState<FoundItem[]>([]);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const allMatches = [...new Map(messages.flatMap((m) => m.items ?? []).map((item) => [item.id, item])).values()];
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (details.length && !dialog.open) dialog.showModal();
+    if (!details.length && dialog.open) dialog.close();
+  }, [details]);
 
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -72,10 +83,6 @@ export default function AgentPage() {
   const handleBack = () => {
     window.location.assign("/lost/category");
   };
-
-  // Add these actions when the other pages are ready.
-  // const handleOpenMatch = (itemId) => {};
-  // const handleSeeAllMatches = () => {};
 
   const handleSend = async () => {
     const text = input.trim();
@@ -124,6 +131,22 @@ export default function AgentPage() {
         ...nextHistory,
         ...data.newMessages,
       ]);
+
+      // Show the latest actual search criteria, including an intentionally omitted area.
+      const searches = data.toolCalls.filter((call: { name: string }) => call.name === "search_items");
+      const search = searches[searches.length - 1];
+      if (search) {
+        const args = search.arguments;
+        const colors: string[] = Array.isArray(args.colors) ? args.colors : [];
+        const swatches = colors.flatMap((c) => c === "multicolor" ? ["red", "gold", "green", "blue"] : [c]);
+        setReportSummary({
+          color: colors.length ? {
+            label: colors.map(capitalize).join(", "),
+            swatch: swatches.length === 1 ? swatches[0] : `linear-gradient(90deg, ${swatches.join(", ")})`,
+          } : null,
+          location: args.area || "All campus areas",
+        });
+      }
 
       const items: FoundItem[] = data.toolCalls
         .filter(
@@ -228,7 +251,7 @@ export default function AgentPage() {
                 >
                   {reportSummary.color?.label ?? "Not yet known"}
                 </div>
-                <div className="agent-summary-label">Color — from chat</div>
+                <div className="agent-summary-label">Colors searched</div>
               </div>
             </div>
 
@@ -249,7 +272,7 @@ export default function AgentPage() {
                   {reportSummary.location ?? "Not yet known"}
                 </div>
                 <div className="agent-summary-label">
-                  Location — from chat
+                  Area searched
                 </div>
               </div>
             </div>
@@ -308,7 +331,7 @@ export default function AgentPage() {
                       key={item.id}
                       type="button"
                       className="agent-match-card"
-                      aria-disabled="true"
+                      onClick={() => setDetails([item])}
                     >
                       <span className="agent-match-image">
                         <Backpack
@@ -398,13 +421,30 @@ export default function AgentPage() {
             <button
               type="button"
               className="agent-see-all-button"
-              aria-disabled="true"
+              disabled={allMatches.length === 0}
+              onClick={() => setDetails(allMatches)}
             >
-              See all possible matches instead
+              Review matches shown in this chat
             </button>
           </div>
         </main>
       </div>
+      <dialog ref={dialogRef} className="agent-detail-dialog" aria-labelledby="match-details-title" onClose={() => setDetails([])}>
+        <h2 id="match-details-title">Possible matches</h2>
+        <p>Compare the details. Ownership must be verified separately.</p>
+        {details.map((item) => (
+          <article key={item.id}>
+            {itemPhoto(item.image_url) && <img src={itemPhoto(item.image_url)} alt={item.item_type.replaceAll("_", " ")} />}
+            <h3>{capitalize(item.colors.join(" "))} {item.item_type.replaceAll("_", " ")}</h3>
+            <p>{item.description || "No description recorded."}</p>
+            <p>Location: {item.location_detail || item.area || "Not recorded"}</p>
+            <p>Found: {item.found_at?.slice(0, 10) || "Not recorded"}</p>
+            {item.brand && <p>Brand: {item.brand}</p>}
+            <p>Reference: {item.id}</p>
+          </article>
+        ))}
+        <button type="button" className="fy-btn fy-btn-primary" onClick={() => dialogRef.current?.close()}>Close</button>
+      </dialog>
     </div>
   );
 }

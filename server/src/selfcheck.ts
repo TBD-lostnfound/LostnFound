@@ -3,6 +3,23 @@ import { getSystemPrompt } from "./agent.js";
 import { cleanSearchArgs } from "./tools.js";
 import { OTHER_AREA } from "./lists.js";
 import { get_item, search_items, TOOL_DEFS } from "./tools.js";
+import { readFileSync } from "node:fs";
+
+// The tools now read the image service asynchronously. Serve the existing fixtures
+// through a fake fetch so these checks still need neither a running service nor a key.
+const fixtures = JSON.parse(readFileSync(new URL("../../stubs/foundyou-fake-items.json", import.meta.url), "utf8"));
+const originalFetch = globalThis.fetch;
+const originalBackend = process.env.IMAGE_BACKEND_URL;
+process.env.IMAGE_BACKEND_URL = "http://foundyou-selfcheck.test";
+globalThis.fetch = async (input) => {
+  if (String(input) !== "http://foundyou-selfcheck.test/api/items") throw new Error(`Unexpected selfcheck request: ${input}`);
+  return Response.json(fixtures.map((record: any) => ({
+    ...record.public,
+    caption: record.public.description,
+    finder_report: { location: record.public.location_detail },
+    system: { status: record.server_only.status },
+  })));
+};
 
 let failed = 0;
 const check = (name: string, ok: boolean, extra = "") => {
@@ -10,7 +27,7 @@ const check = (name: string, ok: boolean, extra = "") => {
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}${extra ? "  " + extra : ""}`);
 };
 
-const s: any = search_items({
+const s: any = await search_items({
   item_type: "earbuds", colors: ["white"], brand: "Apple",
   area: "Woodruff Library", lost_after: "2026-09-26T00:00:00Z",
 });
@@ -21,15 +38,16 @@ check("item_0006 (resolved) absent", !ids.includes("item_0006"));
 check("item_0007 (found 2026-09-20) absent", !ids.includes("item_0007"));
 check("item_0008 (MacBook) absent", !ids.includes("item_0008"));
 
-const wide: any = search_items({ item_type: "earbuds", lost_after: "2026-09-01T00:00:00Z" });
+const wide: any = await search_items({ item_type: "earbuds", lost_after: "2026-09-01T00:00:00Z" });
 check("wide earbuds search excludes resolved item_0006", !wide.results.some((r: any) => r.id === "item_0006"));
-check("max 5 results", search_items({ item_type: "backpack" }) && (search_items({ item_type: "backpack" }) as any).results.length === 5);
+const backpacks = await search_items({ item_type: "backpack" });
+check("max 5 results", backpacks.results?.length === 5);
 
-const all = JSON.stringify([s, wide, get_item({ id: "item_0001" }), get_item({ id: "item_0006" }), get_item({ id: "nope" })]);
+const all = JSON.stringify([s, wide, await get_item({ id: "item_0001" }), await get_item({ id: "item_0006" }), await get_item({ id: "nope" })]);
 check("no finder_id / detected_text / status in tool output", !/finder_id|detected_text|status/.test(all));
-check("get_item unknown id -> not found", (get_item({ id: "nope" }) as any).error === "not found");
-check("get_item resolved id -> not found", (get_item({ id: "item_0006" }) as any).error === "not found");
-check("get_item returns image_url", !!(get_item({ id: "item_0001" }) as any).item.image_url);
+check("get_item unknown id -> not found", (await get_item({ id: "nope" }) as any).error === "not found");
+check("get_item resolved id -> not found", (await get_item({ id: "item_0006" }) as any).error === "not found");
+check("get_item returns image_url", !!(await get_item({ id: "item_0001" }) as any).item.image_url);
 
 const areaEnum: string[] = (TOOL_DEFS[0] as any).function.parameters.properties.area.enum;
 check("area enum lacks 'Other / not sure'", !areaEnum.includes(OTHER_AREA));
@@ -40,11 +58,11 @@ check("prompt starts at Role section", prompt.startsWith("## Role"));
 
 // Empty optional args behave as if absent.
 const base = { item_type: "earbuds", colors: ["white"], area: "Woodruff Library" };
-const cleanedNoisy = search_items({ item_type: "earbuds", brand: "", keywords: "  ", area: "", colors: [] });
-const plain = search_items({ item_type: "earbuds" });
+const cleanedNoisy = await search_items({ item_type: "earbuds", brand: "", keywords: "  ", area: "", colors: [] });
+const plain = await search_items({ item_type: "earbuds" });
 check("empty brand/keywords/colors/area == args omitted", JSON.stringify(cleanedNoisy) === JSON.stringify(plain));
-const withEmptyColor = search_items({ ...base, colors: ["white", ""], lost_after: "", lost_before: " " });
-check("empty color string and empty dates ignored", JSON.stringify(withEmptyColor) === JSON.stringify(search_items(base)));
+const withEmptyColor = await search_items({ ...base, colors: ["white", ""], lost_after: "", lost_before: " " });
+check("empty color string and empty dates ignored", JSON.stringify(withEmptyColor) === JSON.stringify(await search_items(base)));
 console.log("cleaned example:", JSON.stringify(cleanSearchArgs({ item_type: "earbuds", colors: [], brand: "", keywords: " ", area: "", lost_after: "2026-09-26T00:00:00Z", lost_before: "" })));
 
 // Date line, built per call (not at startup).
@@ -77,4 +95,7 @@ for (const bad of ["2026-13-45", "2026-02-30", "09/29/2026", "tomorrow"]) {
 }
 if (saved === undefined) delete process.env.TODAY_OVERRIDE; else process.env.TODAY_OVERRIDE = saved;
 
-process.exit(failed ? 1 : 0);
+globalThis.fetch = originalFetch;
+if (originalBackend === undefined) delete process.env.IMAGE_BACKEND_URL;
+else process.env.IMAGE_BACKEND_URL = originalBackend;
+process.exitCode = failed ? 1 : 0;
