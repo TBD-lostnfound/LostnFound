@@ -82,6 +82,9 @@ export default function ReportItem() {
   const [photo, setPhoto] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
   const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submittedId, setSubmittedId] = useState("");
+  const submitLock = useRef(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -95,20 +98,45 @@ export default function ReportItem() {
   const addColors = (names: string[]) => setSelectedColors((current) => [...new Set([...current, ...names])]);
   const toggleColor = (name: string) => setSelectedColors((current) => current.includes(name) ? current.filter((c) => c !== name) : [...current, name]);
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitLock.current || submittedId) return;
+    if (!photo || !photo.type.startsWith("image/")) {
+      setMessage("Please add a photo of the item.");
+      return;
+    }
+    if (photo.size === 0 || photo.size > 15 * 1024 * 1024) {
+      setMessage("Choose a non-empty photo under 15 MB.");
+      return;
+    }
+    if (!location.trim() || !date) {
+      setMessage("Please enter where and when you found it.");
+      return;
+    }
     const colorsToSave = [...new Set([...selectedColors, ...textColors])];
     if (colorsToSave.length === 0) { setMessage("Please pick at least one color."); return; }
+    submitLock.current = true;
+    setSubmitting(true);
+    setMessage("");
     try {
-      localStorage.setItem("foundyou-found-item-draft", JSON.stringify({
-        category, colors: colorsToSave, colorDescription: colorText.trim(),
-        found_at: new Date(`${date}T${time || "12:00"}`).toISOString(), timeKnown: Boolean(time),
+      const form = new FormData();
+      form.append("photo", photo);
+      form.append("report", JSON.stringify({
+        category, colors: colorsToSave, color_description: colorText.trim(),
+        // A missing time stays unknown rather than becoming an invented noon timestamp.
+        found_at: time ? new Date(`${date}T${time}`).toISOString() : date,
         location: location.trim(), details: details.trim(),
-        photoName: photo?.name ?? null, savedAt: new Date().toISOString(),
       }));
-      setMessage("Details saved on this device as a draft. Your report has not been submitted yet; submission is not connected. Photos are not saved with the draft.");
+      const response = await fetch("/api/items", { method: "POST", body: form });
+      const item = await response.json().catch(() => null);
+      if (!response.ok || typeof item?.id !== "string") throw new Error("Submission failed");
+      setSubmittedId(item.id);
+      setMessage(`Found item submitted. Reference: ${item.id}.`);
     } catch {
-      setMessage("Unable to save your draft on this device. Please keep this page open so you don't lose your details.");
+      submitLock.current = false;
+      setMessage("The report could not be submitted. Your details are still here; please try again.");
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -134,12 +162,12 @@ export default function ReportItem() {
             setPhoto(file); setMessage("");
           }} />
           <button className="fy-btn fy-btn-primary report-add-photo fy-rise fy-delay-2" type="button" onClick={() => fileInput.current?.click()}><Upload size={15} aria-hidden="true" />{photo ? "Change Photo" : "Add Photo"}</button>
-          <p className="report-privacy"><ShieldCheck size={15} aria-hidden="true" /><span>Only shown to a verified match — never posted publicly.</span></p>
+          <p className="report-privacy"><ShieldCheck size={15} aria-hidden="true" /><span>Use a sample item photo for this demo. Ownership must be verified separately.</span></p>
         </aside>
         <section className="report-details">
           <h1 className="fy-rise">Add a few details</h1>
           <p className="report-description fy-rise fy-delay-1">A couple of quick fields help the right person find it faster.</p>
-          <form className="fy-rise fy-delay-2" onSubmit={submit} onChange={() => setMessage("")}>
+          <form className="fy-rise fy-delay-2" onSubmit={submit} onChange={() => { if (!submittedId) setMessage(""); }}>
             <fieldset className="report-row"><legend>What is it?</legend><div className="report-category-options">{categories.map((item) => <button type="button" key={item} className={`report-chip${category === item ? " is-selected" : ""}`} aria-pressed={category === item} onClick={() => { setCategory(item); setMessage(""); }}>{item}</button>)}</div></fieldset>
             <fieldset className="report-row">
               <legend>Color <span className="report-legend-hint">Pick all that apply</span></legend>
@@ -169,7 +197,10 @@ export default function ReportItem() {
               <label className="report-label" htmlFor="found-details">Additional details (optional)</label>
               <textarea id="found-details" value={details} maxLength={2000} onChange={(event) => setDetails(event.target.value)} placeholder="e.g., brand, keychain, stickers, or anything unique..." />
             </div>
-            <button className="fy-btn fy-btn-primary report-submit" type="submit">Submit found item <ArrowRight size={18} aria-hidden="true" /></button>
+            <button className="fy-btn fy-btn-primary report-submit" type="submit" disabled={submitting || Boolean(submittedId)}>
+              {submitting ? "Submitting…" : submittedId ? "Report submitted" : "Submit found item"}
+              <ArrowRight size={18} aria-hidden="true" />
+            </button>
             {message && <p className="report-message" role="status">{message}</p>}
           </form>
         </section>

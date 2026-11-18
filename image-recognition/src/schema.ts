@@ -43,13 +43,25 @@ export const Extraction = z.strictObject({
 });
 export type Extraction = z.infer<typeof Extraction>;
 
-export type LocationSource = "exif" | "device" | "none";
-export type TimeSource = "exif" | "device" | "server";
+// Finder-entered facts stay separate from the vision model's observations.
+export const FinderReport = z.object({
+  category: z.enum(["Electronics", "Bag", "Keys", "ID / Card", "Clothing", "Bottle", "Other"]),
+  colors: z.array(z.enum([...COLORS, "multicolor"])).min(1).max(16),
+  color_description: z.string().trim().max(100),
+  found_at: z.union([z.iso.date(), z.iso.datetime({ offset: true })]),
+  location: z.string().trim().min(1).max(200),
+  details: z.string().trim().max(2000),
+});
+export type FinderReport = z.infer<typeof FinderReport>;
+
+export type LocationSource = "exif" | "device" | "none" | "finder";
+export type TimeSource = "exif" | "device" | "server" | "finder";
 
 export interface Item {
+  finder_report?: FinderReport;
   id: string;
   image_url: string;
-  found_at: string;
+  found_at: string; // ISO timestamp, or YYYY-MM-DD when a finder does not know the time.
   area: string | null;
   category: Category;
   item_type: string;

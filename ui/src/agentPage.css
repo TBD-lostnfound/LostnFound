@@ -460,6 +460,24 @@
 
 /* Mobile */
 
+.agent-detail-dialog {
+  width: min(600px, calc(100vw - 32px));
+  max-height: 85vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  border: 1px solid var(--fy-line);
+  border-radius: 20px;
+  padding: 24px;
+  color: var(--fy-ink);
+  background: var(--fy-bg);
+}
+
+.agent-detail-dialog::backdrop { background: rgb(0 0 0 / 45%); }
+.agent-detail-dialog article { padding: 18px 0; border-bottom: 1px solid var(--fy-line); }
+.agent-detail-dialog img { width: 100%; max-height: 300px; object-fit: contain; border-radius: 12px; }
+.agent-detail-dialog .fy-btn { margin-top: 18px; }
+.agent-see-all-button:disabled { opacity: .5; cursor: default; }
+
 @media (max-width: 640px) {
   .agent-message-content {
     max-width: 90%;
