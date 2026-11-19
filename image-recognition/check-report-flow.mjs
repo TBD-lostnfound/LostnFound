@@ -98,8 +98,27 @@ try {
   assert.equal(publicItem.system, undefined);
   assert.equal(publicItem.finder_report, undefined);
   assert.equal(publicItem.detected_text, undefined);
-  assert.equal(visionCalls, 4);
-  console.log("PASS: upload validation, photo/details persistence, image retrieval, unknown location/time, legacy upload, and ranked search integration (fake AI only).");
+  const countItems = async () => (await (await fetch(`${base}/api/items`)).json()).length;
+  const before = await countItems();
+  const analyzeBody = new FormData();
+  analyzeBody.append("photo", new Blob([photo], { type: "image/jpeg" }), "bag.jpg");
+  const analyzed = await fetch(`${base}/api/items/analyze`, { method: "POST", body: analyzeBody });
+  assert.equal(analyzed.status, 200);
+  const seen = await analyzed.json();
+  assert.equal(seen.item_type, "backpack");
+  assert.deepEqual(seen.colors, ["black"]);
+  assert.equal(seen.detected_text, undefined, "Analysis must not return sensitive text");
+  assert.equal(await countItems(), before, "Analyzing a photo must not save an item");
+  const textOnly = new FormData();
+  textOnly.append("photo", new Blob(["x"], { type: "text/plain" }), "a.txt");
+  assert.equal((await fetch(`${base}/api/items/analyze`, { method: "POST", body: textOnly })).status, 400);
+
+  const { category: _category, colors: _colors, ...noColors } = report;
+  const aiColors = await (await upload(noColors)).json();
+  assert.deepEqual(aiColors.colors, ["black"], "Without finder colors, the AI's colors are kept");
+
+  assert.equal(visionCalls, 6);
+  console.log("PASS: upload validation, photo/details persistence, image retrieval, unknown location/time, legacy upload, photo analysis without saving, AI colors when the finder leaves them out, and ranked search integration (fake AI only).");
 } finally {
   if (server) {
     server.closeAllConnections();

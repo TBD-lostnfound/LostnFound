@@ -5,6 +5,9 @@ import { relative } from "node:path";
 import { config } from "./config.js";
 import { FinderReport } from "./schema.js";
 import { ingestPhoto } from "./pipeline/ingest.js";
+import { normalizePhoto } from "./pipeline/image.js";
+import { postprocess } from "./pipeline/postprocess.js";
+import { extract } from "./pipeline/vision.js";
 import { getImage, getItem, listItems } from "./store.js";
 
 const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
@@ -42,6 +45,28 @@ app.post("/api/items", async (c) => {
   } catch (e) {
     console.error(e);
     return c.json({ error: e instanceof Error ? e.message : "Ingest failed" }, 502);
+  }
+});
+
+// Reads a photo and returns what the vision model sees, without saving anything, so the
+// finder can check and correct it before submitting.
+app.post("/api/items/analyze", async (c) => {
+  const body = await c.req.parseBody();
+  const photo = body.photo;
+  if (!(photo instanceof File)) return c.json({ error: "Send the image as multipart field 'photo'." }, 400);
+  if (photo.size > MAX_UPLOAD_BYTES) return c.json({ error: "Photo is over 15 MB." }, 413);
+  if (photo.size === 0 || !photo.type.startsWith("image/")) {
+    return c.json({ error: "Choose a non-empty image file." }, 400);
+  }
+  try {
+    const x = postprocess((await extract(await normalizePhoto(Buffer.from(await photo.arrayBuffer())))).extraction);
+    return c.json({
+      category: x.category, item_type: x.item_type, item_type_other: x.item_type_other,
+      colors: x.colors, brand: x.brand, caption: x.caption,
+    });
+  } catch (e) {
+    console.error(e);
+    return c.json({ error: "Could not read the photo." }, 502);
   }
 });
 
