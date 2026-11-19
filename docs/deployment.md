@@ -21,7 +21,7 @@ services, so the frontend calls relative paths like `fetch("/api/chat")` and nee
 | Path on the website URL | Goes to |
 |---|---|
 | `/api/chat` | Agent |
-| `/api/items`, `/api/items/:id`, `/images/...` | Photo reader |
+| `/api/items`, `/api/items/:id`, `/api/items/analyze`, `/images/...` | Photo reader |
 | `/api/agent/health`, `/api/images/health` | each service's `/api/health` |
 | everything else | the website |
 

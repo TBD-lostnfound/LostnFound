@@ -44,9 +44,10 @@ export const Extraction = z.strictObject({
 export type Extraction = z.infer<typeof Extraction>;
 
 // Finder-entered facts stay separate from the vision model's observations.
+// Category and colors are optional: when the finder leaves them out, the vision model's values are used.
 export const FinderReport = z.object({
-  category: z.enum(["Electronics", "Bag", "Keys", "ID / Card", "Clothing", "Bottle", "Other"]),
-  colors: z.array(z.enum([...COLORS, "multicolor"])).min(1).max(16),
+  category: z.enum(["Electronics", "Bag", "Keys", "ID / Card", "Clothing", "Bottle", "Other"]).optional(),
+  colors: z.array(z.enum([...COLORS, "multicolor"])).min(1).max(16).optional(),
   color_description: z.string().trim().max(100),
   found_at: z.union([z.iso.date(), z.iso.datetime({ offset: true })]),
   location: z.string().trim().min(1).max(200),

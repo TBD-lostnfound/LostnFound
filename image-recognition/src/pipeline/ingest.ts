@@ -30,7 +30,7 @@ export async function ingestPhoto(photo: Buffer, device: DeviceHints, report?: F
     item_type: x.item_type,
     item_type_other: x.item_type_other,
     colors: report?.colors ?? x.colors,
-    color_primary: report?.colors[0] ?? x.color_primary,
+    color_primary: report?.colors?.[0] ?? x.color_primary,
     pattern: x.pattern,
     materials: x.materials,
     brand: x.brand,
